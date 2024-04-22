@@ -59,19 +59,20 @@ public class TbClient {
         }
     }
 
-    public static void telemetry(String msg) {
+    public static void publish(String topic, String msg) {
         MqttMessage mqttMessage = new MqttMessage();
         mqttMessage.setPayload(msg.getBytes(StandardCharsets.UTF_8));
         try {
             log.info("send: {}", msg);
-            mqttClient.publish("v1/gateway/telemetry", mqttMessage);
+            mqttClient.publish(topic, mqttMessage);
         } catch (MqttException e) {
             log.error(e, e.getMessage());
         }
     }
 
-    private static final Map<String, Function<JsonObject, MqttMessage>> functionMap =
+    private static final Map<String, Function<JsonObject, String>> functionMap =
             Map.of("v1/gateway/rpc", jsonObject -> {
+                log.info("rpc: {}", jsonObject);
                 String device = jsonObject.get("device").getAsString();
                 GatewayConfig gatewayConfig = Config.GATEWAY_CONFIG;
                 BiMap<DeviceConfig, Connector> connectorsMap = Config.CONNECTORS_MAP;
@@ -81,7 +82,18 @@ public class TbClient {
                         continue;
                     }
                     Connector connector = connectorsMap.get(deviceConfig);
-                    return connector.serverSideRpcHandler(jsonObject);
+                    Object o = connector.serverSideRpcHandler(jsonObject);
+
+                    String id = jsonObject.get("data").getAsJsonObject()
+                            .get("id").getAsString();
+
+                    Map<String, Object> retData = Map.of(
+                            "device", deviceName,
+                            "id", id,
+                            "data", ObjUtil.defaultIfNull(o, "null")
+                    );
+                    Gson gson = new Gson();
+                    return gson.toJson(retData);
                 }
                 throw new RuntimeException("不存在的设备: " + device);
             });
@@ -112,8 +124,14 @@ public class TbClient {
                 JsonObject jsonObject = gson.fromJson(
                         new String(message.getPayload(), StandardCharsets.UTF_8), JsonObject.class
                 );
-                MqttMessage apply = functionMap.get(topic).apply(jsonObject);
-                mqttClient.publish(topic, apply);
+                try {
+                    String apply = functionMap.get(topic).apply(jsonObject);
+                    log.info("callback: {}", apply);
+                    message.setPayload(apply.getBytes(StandardCharsets.UTF_8));
+                    mqttClient.publish(topic, message);
+                } catch (Exception e) {
+                    log.error(e, e.getMessage());
+                }
             }
 
             @Override

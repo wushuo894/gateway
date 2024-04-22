@@ -41,7 +41,7 @@ public abstract class Connector implements Runnable {
      * @param jsonObject 入参
      * @return 返回
      */
-    public abstract MqttMessage serverSideRpcHandler(JsonObject jsonObject);
+    public abstract Object serverSideRpcHandler(JsonObject jsonObject);
 
     public void telemetry(Map<String, Object> map) {
         Gson gson = new Gson();
@@ -50,7 +50,7 @@ public abstract class Connector implements Runnable {
                 "ts", new Date().getTime(),
                 "values", map
         )));
-        TbClient.telemetry(gson.toJson(msg));
+        TbClient.publish("v1/gateway/telemetry",gson.toJson(msg));
     }
 
 }

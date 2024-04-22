@@ -72,7 +72,7 @@ public class ModbusConnectors extends Connector {
      * @return 返回
      */
     @Override
-    public MqttMessage serverSideRpcHandler(JsonObject jsonObject) {
+    public Object serverSideRpcHandler(JsonObject jsonObject) {
         return null;
     }
 

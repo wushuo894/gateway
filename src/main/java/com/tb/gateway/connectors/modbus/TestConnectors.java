@@ -2,10 +2,10 @@ package com.tb.gateway.connectors.modbus;
 
 import cn.hutool.core.thread.ThreadUtil;
 import cn.hutool.log.Log;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.tb.gateway.connectors.base.Connector;
 import com.tb.gateway.entity.TestConfig;
-import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 import java.util.Date;
 import java.util.Map;
@@ -25,8 +25,11 @@ public class TestConnectors extends Connector {
     }
 
     @Override
-    public MqttMessage serverSideRpcHandler(JsonObject jsonObject) {
+    public Object serverSideRpcHandler(JsonObject jsonObject) {
+        JsonObject data = jsonObject.get("data").getAsJsonObject();
+        String method = data.get("method").getAsString();
+        JsonElement params = data.get("params");
         log.info("serverSideRpcHandle: {}", jsonObject);
-        return null;
+        return "ok";
     }
 }

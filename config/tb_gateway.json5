@@ -3,9 +3,6 @@
     "host": "192.168.196.88",
     "port": 1883,
     "userName": "mpyKAWTmDWOXEDzEXSOD"
-    //    "clientId": "kcohi7ntabce6v36jm27",
-    //    "userName": "mido2g29nd4z4eghxn56",
-    //    "password": "ybapiap4r9qarlu00ado"
   },
   "connectors": [
     {
