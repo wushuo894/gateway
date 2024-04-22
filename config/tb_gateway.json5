@@ -15,5 +15,10 @@
       "deviceType": "TEST",
       "fileName": "test.json5"
     }
-  ]
+  ],
+  "thread": {
+    "corePoolSize": 4,
+    "maxPoolSize": 12,
+    "capacity": 128
+  }
 }

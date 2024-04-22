@@ -1,4 +1,4 @@
-package com.tb.gateway.entity;
+package com.tb.gateway.config;
 
 import cn.hutool.core.map.BiMap;
 import com.tb.gateway.connectors.base.BaseConfig;

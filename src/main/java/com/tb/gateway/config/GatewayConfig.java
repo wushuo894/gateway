@@ -1,4 +1,4 @@
-package com.tb.gateway.entity;
+package com.tb.gateway.config;
 
 import com.tb.gateway.connectors.base.BaseConfig;
 import lombok.Data;
@@ -15,4 +15,5 @@ import java.util.List;
 public class GatewayConfig implements Serializable {
     private ThingsBoardConfig thingsboard;
     private List<BaseConfig> connectors;
+    private ThreadConfig thread;
 }

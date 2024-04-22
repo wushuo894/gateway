@@ -9,11 +9,12 @@ import cn.hutool.core.util.StrUtil;
 import cn.hutool.log.Log;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import com.tb.gateway.config.ThreadConfig;
 import com.tb.gateway.connectors.base.Connector;
-import com.tb.gateway.entity.Config;
+import com.tb.gateway.config.Config;
 import com.tb.gateway.connectors.base.BaseConfig;
-import com.tb.gateway.entity.GatewayConfig;
-import com.tb.gateway.entity.ThingsBoardConfig;
+import com.tb.gateway.config.GatewayConfig;
+import com.tb.gateway.config.ThingsBoardConfig;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import org.eclipse.paho.client.mqttv3.*;
@@ -120,7 +121,7 @@ public class TbClient {
                     log.info("not subscribe: {}", topic);
                     return;
                 }
-                ThreadUtil.execute(() -> {
+                ThreadConfig.EXECUTOR.submit(() -> {
                     JsonObject jsonObject = gson.fromJson(
                             new String(message.getPayload(), StandardCharsets.UTF_8), JsonObject.class
                     );

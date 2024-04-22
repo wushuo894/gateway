@@ -3,13 +3,15 @@ package com.tb.gateway.utils;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.map.BiMap;
 import cn.hutool.core.util.ClassUtil;
+import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.log.Log;
 import com.google.gson.Gson;
+import com.tb.gateway.config.ThreadConfig;
 import com.tb.gateway.connectors.base.Connector;
-import com.tb.gateway.entity.Config;
+import com.tb.gateway.config.Config;
 import com.tb.gateway.connectors.base.BaseConfig;
-import com.tb.gateway.entity.GatewayConfig;
+import com.tb.gateway.config.GatewayConfig;
 import com.tb.gateway.enums.DeviceType;
 
 import java.io.File;
@@ -40,6 +42,9 @@ public class GatewayUtil {
         List<BaseConfig> baseConfigList = gatewayConfig.getConnectors();
 
         Config.THINGS_BOARD_CONFIG = gatewayConfig.getThingsboard();
+        ThreadConfig thread = ObjUtil.defaultIfNull(gatewayConfig.getThread(), new ThreadConfig());
+        thread.init();
+        gatewayConfig.setThread(thread);
 
         Map<String, ? extends Class<?>> collect = ClassUtil.scanPackage("com.tb.gateway")
                 .stream()

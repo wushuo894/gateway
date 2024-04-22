@@ -3,12 +3,14 @@ package com.tb.gateway;
 import cn.hutool.core.thread.ThreadUtil;
 import cn.hutool.log.Log;
 import com.google.gson.Gson;
+import com.tb.gateway.config.ThreadConfig;
 import com.tb.gateway.connectors.base.Connector;
-import com.tb.gateway.entity.Config;
+import com.tb.gateway.config.Config;
 import com.tb.gateway.tb.TbClient;
 import com.tb.gateway.utils.GatewayUtil;
 
 import java.util.Collection;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
 public class Main {
@@ -21,15 +23,16 @@ public class Main {
         TbClient.subscribe();
         log.info(gson.toJson(Config.GATEWAY_CONFIG));
         Collection<Connector> connectors = Config.CONNECTORS_MAP.values();
+        ExecutorService executor = ThreadConfig
+                .EXECUTOR;
         for (Connector connector : connectors) {
-            ThreadUtil
-                    .execute(() -> {
-                        try {
-                            connector.run();
-                        } catch (Exception e) {
-                            log.error(e, e.getMessage());
-                        }
-                    });
+            executor.submit(() -> {
+                try {
+                    connector.run();
+                } catch (Exception e) {
+                    log.error(e, e.getMessage());
+                }
+            });
         }
 
         // 三分钟一次 GC

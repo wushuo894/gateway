@@ -1,4 +1,4 @@
-package com.tb.gateway.entity;
+package com.tb.gateway.config;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
