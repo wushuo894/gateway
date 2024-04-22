@@ -3,7 +3,7 @@
   "unitId": 3,
   "baudrate": 9600,
   "stopbits": 1,
-  "bytesize": 8,
+  "databits": 8,
   "timeseries": [
     {
       "tag": "温度",

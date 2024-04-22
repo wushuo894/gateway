@@ -1,10 +1,14 @@
 package com.tb.gateway;
 
+import cn.hutool.core.thread.ThreadUtil;
 import cn.hutool.log.Log;
 import com.google.gson.Gson;
+import com.tb.gateway.connectors.base.Connector;
 import com.tb.gateway.entity.Config;
 import com.tb.gateway.tb.TbClient;
 import com.tb.gateway.util.GatewayUtil;
+
+import java.util.Collection;
 
 public class Main {
     private static final Log log = Log.get(Main.class);
@@ -15,16 +19,16 @@ public class Main {
         TbClient.connect();
         TbClient.subscribe();
         log.info(gson.toJson(Config.GATEWAY_CONFIG));
-//
-//        while (true) {
-//            Map<String, List<Object>> msg = Map.of("test", Collections.singletonList(Map.of(
-//                    "ts", new Date().getTime(),
-//                    "values", Map.of(
-//                            "temperature", 42
-//                    )
-//            )));
-//            TbClient.send(gson.toJson(msg));
-//            ThreadUtil.sleep(3000);
-//        }
+        Collection<Connector> connectors = Config.CONNECTORS_MAP.values();
+        for (Connector connector : connectors) {
+            ThreadUtil
+                    .execute(() -> {
+                        try {
+                            connector.run();
+                        } catch (Exception e) {
+                            log.error(e, e.getMessage());
+                        }
+                    });
+        }
     }
 }

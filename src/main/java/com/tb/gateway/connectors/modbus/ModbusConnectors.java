@@ -24,13 +24,15 @@ import java.util.List;
 @Accessors(chain = true)
 public class ModbusConnectors extends Connector {
     private final Log log = Log.get(ModbusConfig.class);
-    private final ModbusConfig modbusConfig = (ModbusConfig) deviceConfig;
+    private ModbusConfig modbusConfig = null;
 
     /**
      * 运行
      */
     @Override
     public void run() {
+        modbusConfig = (ModbusConfig) deviceConfig;
+
         String port = modbusConfig.getPort();
         Integer stopBits = modbusConfig.getStopbits();
         Integer databits = modbusConfig.getDatabits();

@@ -62,6 +62,7 @@ public class GatewayUtil {
                     String s = FileUtil.readUtf8String(new File("config" + File.separator + config.getFileName()));
 
                     DeviceConfig deviceConfig = (DeviceConfig) gson.fromJson(s, configClass);
+                    deviceConfig.setDeviceName(config.getDeviceName());
                     Connector connector = (Connector) ReflectUtil.newInstance(connectorsClass);
                     connector.setDeviceConfig(deviceConfig);
 

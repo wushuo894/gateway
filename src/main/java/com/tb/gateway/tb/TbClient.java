@@ -4,6 +4,7 @@ import cn.hutool.core.map.BiMap;
 import cn.hutool.core.text.StrFormatter;
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.ObjUtil;
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.log.Log;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
@@ -32,7 +33,7 @@ public class TbClient {
         ThingsBoardConfig thingsBoardConfig = Config.THINGS_BOARD_CONFIG;
         String host = thingsBoardConfig.getHost();
         Integer port = thingsBoardConfig.getPort();
-        String clientId = thingsBoardConfig.getClientId();
+        String clientId = StrUtil.blankToDefault(thingsBoardConfig.getClientId(), "");
         String userName = thingsBoardConfig.getUserName();
         String password = thingsBoardConfig.getPassword();
         Integer timeout = ObjUtil.defaultIfNull(thingsBoardConfig.getTimeout(), 3000);
@@ -40,19 +41,25 @@ public class TbClient {
         String url = StrFormatter.format("tcp://{}:{}", host, port);
 
         try {
-            log.info(url);
+            log.info("connect: {}", url);
             mqttClient = new MqttClient(url, clientId);
+
             MqttConnectOptions mqttConnectOptions = new MqttConnectOptions();
             mqttConnectOptions.setUserName(userName);
-            mqttConnectOptions.setPassword(password.toCharArray());
             mqttConnectOptions.setConnectionTimeout(timeout);
+
+            if (StrUtil.isNotBlank(password)) {
+                mqttConnectOptions.setPassword(password.toCharArray());
+            }
+
             mqttClient.connect(mqttConnectOptions);
+            log.info("connect ok.");
         } catch (MqttException e) {
             log.error(e, e.getMessage());
         }
     }
 
-    public static void send(String msg) {
+    public static void telemetry(String msg) {
         MqttMessage mqttMessage = new MqttMessage();
         mqttMessage.setPayload(msg.getBytes(StandardCharsets.UTF_8));
         try {
