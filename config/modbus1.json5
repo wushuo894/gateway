@@ -1,0 +1,23 @@
+{
+  "port": "/dev/tty.usbserial-B00282SI",
+  "unitId": 3,
+  "baudrate": 9600,
+  "stopbits": 1,
+  "bytesize": 8,
+  "timeseries": [
+    {
+      "tag": "温度",
+      "type": "16int",
+      "functionCode": 3,
+      "objectsCount": 1,
+      "address": 512
+    },
+    {
+      "tag": "湿度",
+      "type": "16int",
+      "functionCode": 3,
+      "objectsCount": 1,
+      "address": 513
+    }
+  ]
+}

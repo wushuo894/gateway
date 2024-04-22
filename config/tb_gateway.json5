@@ -1,0 +1,16 @@
+{
+  "thingsBoard": {
+    "host": "192.168.1.196",
+    "port": 1883,
+    "clientId": "kcohi7ntabce6v36jm27",
+    "userName": "mido2g29nd4z4eghxn56",
+    "password": "ybapiap4r9qarlu00ado"
+  },
+  "connectors": [
+    {
+      "deviceName": "温湿度",
+      "deviceType": "MODBUS",
+      "fileName": "modbus1.json5"
+    }
+  ]
+}
