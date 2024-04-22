@@ -1,4 +1,4 @@
-package com.tb.gateway.connectors.modbus;
+package com.tb.gateway.connectors.test;
 
 import cn.hutool.core.thread.ThreadUtil;
 import cn.hutool.log.Log;
