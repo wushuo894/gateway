@@ -1,6 +1,5 @@
 package com.tb.gateway.connectors.base;
 
-import cn.hutool.log.Log;
 import com.google.gson.JsonObject;
 import com.tb.gateway.entity.DeviceConfig;
 import lombok.Data;
@@ -15,14 +14,14 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 public abstract class Connector implements Runnable {
 
     /**
-     * 日志
-     */
-    private final Log log = Log.get(Connector.class);
-
-    /**
      * 配置文件
      */
     protected DeviceConfig deviceConfig;
+
+    /**
+     * 数据转换
+     */
+    protected Converter<?, ?> converter;
 
     /**
      * 运行

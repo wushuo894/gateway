@@ -1,7 +1,9 @@
 package com.tb.gateway.tb;
 
+import cn.hutool.core.map.BiMap;
 import cn.hutool.core.text.StrFormatter;
 import cn.hutool.core.util.ArrayUtil;
+import cn.hutool.core.util.ObjUtil;
 import cn.hutool.log.Log;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
@@ -33,6 +35,7 @@ public class TbClient {
         String clientId = thingsBoardConfig.getClientId();
         String userName = thingsBoardConfig.getUserName();
         String password = thingsBoardConfig.getPassword();
+        Integer timeout = ObjUtil.defaultIfNull(thingsBoardConfig.getTimeout(), 3000);
 
         String url = StrFormatter.format("tcp://{}:{}", host, port);
 
@@ -42,6 +45,7 @@ public class TbClient {
             MqttConnectOptions mqttConnectOptions = new MqttConnectOptions();
             mqttConnectOptions.setUserName(userName);
             mqttConnectOptions.setPassword(password.toCharArray());
+            mqttConnectOptions.setConnectionTimeout(timeout);
             mqttClient.connect(mqttConnectOptions);
         } catch (MqttException e) {
             log.error(e, e.getMessage());
@@ -63,12 +67,13 @@ public class TbClient {
             Map.of("v1/gateway/rpc", jsonObject -> {
                 String device = jsonObject.get("device").getAsString();
                 GatewayConfig gatewayConfig = Config.GATEWAY_CONFIG;
+                BiMap<DeviceConfig, Connector> connectorsMap = Config.CONNECTORS_MAP;
                 for (DeviceConfig deviceConfig : gatewayConfig.getConnectors()) {
                     String deviceName = deviceConfig.getDeviceName();
                     if (!device.equals(deviceName)) {
                         continue;
                     }
-                    Connector connector = deviceConfig.getConnector();
+                    Connector connector = connectorsMap.get(deviceConfig);
                     return connector.serverSideRpcHandler(jsonObject);
                 }
                 throw new RuntimeException("不存在的设备: " + device);
@@ -114,7 +119,7 @@ public class TbClient {
                     String s = message.toString();
                     log.info("msg: {}", s);
                 } catch (MqttException e) {
-                    e.printStackTrace();
+                    log.error(e, e.getMessage());
                 }
             }
         });

@@ -1,5 +1,5 @@
 {
-  "thingsBoard": {
+  "thingsboard": {
     "host": "192.168.1.196",
     "port": 1883,
     "clientId": "kcohi7ntabce6v36jm27",

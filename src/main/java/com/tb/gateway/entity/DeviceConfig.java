@@ -4,14 +4,19 @@ import com.tb.gateway.connectors.base.Connector;
 import com.tb.gateway.connectors.base.Converter;
 import com.tb.gateway.eum.DeviceType;
 import lombok.Data;
+import lombok.Generated;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.experimental.Accessors;
+
+import java.io.Serializable;
 
 /**
  * 设备配置
  */
 @Data
 @Accessors(chain = true)
-public class DeviceConfig {
+public class DeviceConfig implements Serializable {
     /**
      * 设备名称
      */
@@ -31,6 +36,7 @@ public class DeviceConfig {
     /**
      * 设备连接
      */
+    @Setter
     private Connector connector;
     /**
      * 数据转换

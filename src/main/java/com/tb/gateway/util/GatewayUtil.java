@@ -1,11 +1,14 @@
 package com.tb.gateway.util;
 
 import cn.hutool.core.io.FileUtil;
+import cn.hutool.core.io.resource.ResourceUtil;
+import cn.hutool.core.map.BiMap;
 import cn.hutool.core.util.ClassUtil;
 import cn.hutool.core.util.EnumUtil;
 import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.log.Log;
 import com.google.gson.Gson;
+import com.tb.gateway.connectors.base.Connector;
 import com.tb.gateway.entity.Config;
 import com.tb.gateway.entity.DeviceConfig;
 import com.tb.gateway.entity.GatewayConfig;
@@ -38,28 +41,34 @@ public class GatewayUtil {
                 gson.fromJson(FileUtil.readUtf8String(tbGatewayConfig.get()), GatewayConfig.class);
         List<DeviceConfig> deviceConfigList = gatewayConfig.getConnectors();
 
+        Config.THINGS_BOARD_CONFIG = gatewayConfig.getThingsboard();
+
         Map<String, ? extends Class<?>> collect = ClassUtil.scanPackage("com.tb.gateway")
                 .stream()
-                .collect(Collectors.toMap(c -> c.getName().toUpperCase(), m -> m));
+                .collect(Collectors.toMap(c -> c.getSimpleName().toUpperCase(), m -> m));
+
+        BiMap<DeviceConfig, Connector> connectorsMap = Config.CONNECTORS_MAP;
 
         deviceConfigList = deviceConfigList.stream()
                 .map(config -> {
-
                     DeviceType deviceType = config.getDeviceType();
                     String name = deviceType.name();
                     Class<?> configClass = collect.get((name + "Config").toUpperCase());
                     Class<?> connectorsClass = collect.get((name + "Connectors").toUpperCase());
                     if (Objects.isNull(configClass)) {
-                        return null;
+                        return config;
                     }
 
                     String s = FileUtil.readUtf8String(new File("config" + File.separator + config.getFileName()));
 
                     DeviceConfig deviceConfig = (DeviceConfig) gson.fromJson(s, configClass);
+                    Connector connector = (Connector) ReflectUtil.newInstance(connectorsClass);
+                    connector.setDeviceConfig(deviceConfig);
 
-
+                    connectorsMap.put(deviceConfig, connector);
+                    return deviceConfig;
                 }).collect(Collectors.toList());
 
-        Config.GATEWAY_CONFIG = gatewayConfig;
+        Config.GATEWAY_CONFIG = gatewayConfig.setConnectors(deviceConfigList);
     }
 }
