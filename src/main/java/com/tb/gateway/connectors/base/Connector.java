@@ -2,6 +2,7 @@ package com.tb.gateway.connectors.base;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import com.tb.gateway.Main;
 import com.tb.gateway.entity.DeviceConfig;
 import com.tb.gateway.tb.TbClient;
 import lombok.Data;
@@ -44,13 +45,12 @@ public abstract class Connector implements Runnable {
     public abstract Object serverSideRpcHandler(JsonObject jsonObject);
 
     public void telemetry(Map<String, Object> map) {
-        Gson gson = new Gson();
         String deviceName = deviceConfig.getDeviceName();
         Map<String, List<Object>> msg = Map.of(deviceName, List.of(Map.of(
                 "ts", new Date().getTime(),
                 "values", map
         )));
-        TbClient.publish("v1/gateway/telemetry",gson.toJson(msg));
+        TbClient.publish("v1/gateway/telemetry", new Gson().toJson(msg));
     }
 
 }

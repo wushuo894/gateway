@@ -10,28 +10,20 @@ import com.ghgande.j2mod.modbus.util.SerialParameters;
 import com.google.gson.JsonObject;
 import com.tb.gateway.connectors.base.Connector;
 import com.tb.gateway.entity.ModbusConfig;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.experimental.Accessors;
-import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 import javax.lang.model.type.TypeKind;
 import java.io.IOException;
 import java.util.List;
 
-@EqualsAndHashCode(callSuper = true)
-@Data
-@Accessors(chain = true)
 public class ModbusConnectors extends Connector {
     private final Log log = Log.get(ModbusConfig.class);
-    private ModbusConfig modbusConfig = null;
 
     /**
      * 运行
      */
     @Override
     public void run() {
-        modbusConfig = (ModbusConfig) deviceConfig;
+        ModbusConfig modbusConfig = (ModbusConfig) deviceConfig;
 
         String port = modbusConfig.getPort();
         Integer stopBits = modbusConfig.getStopbits();

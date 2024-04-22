@@ -12,10 +12,10 @@ import java.util.Map;
 
 public class TestConnectors extends Connector {
     private final Log log = Log.get(TestConnectors.class);
-    private final TestConfig modbusConfig = (TestConfig) deviceConfig;
 
     @Override
     public void run() {
+        TestConfig modbusConfig = (TestConfig) deviceConfig;
         while (true) {
             telemetry(Map.of(
                     "test", new Date().getTime()

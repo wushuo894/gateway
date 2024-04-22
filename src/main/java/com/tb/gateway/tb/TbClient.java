@@ -2,6 +2,7 @@ package com.tb.gateway.tb;
 
 import cn.hutool.core.map.BiMap;
 import cn.hutool.core.text.StrFormatter;
+import cn.hutool.core.thread.ThreadUtil;
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.StrUtil;
@@ -26,7 +27,7 @@ import java.util.function.Function;
 @Accessors(chain = true)
 public class TbClient {
     private static MqttClient mqttClient;
-    private final Gson gson = new Gson();
+    private static final Gson gson = new Gson();
     private static final Log log = Log.get(TbClient.class);
 
     public static void connect() {
@@ -92,7 +93,6 @@ public class TbClient {
                             "id", id,
                             "data", ObjUtil.defaultIfNull(o, "null")
                     );
-                    Gson gson = new Gson();
                     return gson.toJson(retData);
                 }
                 throw new RuntimeException("不存在的设备: " + device);
@@ -120,18 +120,19 @@ public class TbClient {
                     log.info("not subscribe: {}", topic);
                     return;
                 }
-                Gson gson = new Gson();
-                JsonObject jsonObject = gson.fromJson(
-                        new String(message.getPayload(), StandardCharsets.UTF_8), JsonObject.class
-                );
-                try {
-                    String apply = functionMap.get(topic).apply(jsonObject);
-                    log.info("callback: {}", apply);
-                    message.setPayload(apply.getBytes(StandardCharsets.UTF_8));
-                    mqttClient.publish(topic, message);
-                } catch (Exception e) {
-                    log.error(e, e.getMessage());
-                }
+                ThreadUtil.execute(() -> {
+                    JsonObject jsonObject = gson.fromJson(
+                            new String(message.getPayload(), StandardCharsets.UTF_8), JsonObject.class
+                    );
+                    try {
+                        String apply = functionMap.get(topic).apply(jsonObject);
+                        log.info("callback: {}", apply);
+                        message.setPayload(apply.getBytes(StandardCharsets.UTF_8));
+                        mqttClient.publish(topic, message);
+                    } catch (Exception e) {
+                        log.error(e, e.getMessage());
+                    }
+                });
             }
 
             @Override

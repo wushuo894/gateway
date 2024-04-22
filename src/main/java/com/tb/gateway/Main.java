@@ -9,10 +9,11 @@ import com.tb.gateway.tb.TbClient;
 import com.tb.gateway.util.GatewayUtil;
 
 import java.util.Collection;
+import java.util.concurrent.TimeUnit;
 
 public class Main {
     private static final Log log = Log.get(Main.class);
-    private static final Gson gson = new Gson();
+    public static final Gson gson = new Gson();
 
     public static void main(String[] args) {
         GatewayUtil.load();
@@ -30,5 +31,11 @@ public class Main {
                         }
                     });
         }
+
+        // 三分钟一次 GC
+        ThreadUtil.execute(() -> {
+            ThreadUtil.sleep(3, TimeUnit.MINUTES);
+            System.gc();
+        });
     }
 }
