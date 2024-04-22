@@ -9,7 +9,6 @@ import com.ghgande.j2mod.modbus.net.SerialConnection;
 import com.ghgande.j2mod.modbus.util.SerialParameters;
 import com.google.gson.JsonObject;
 import com.tb.gateway.connectors.base.Connector;
-import com.tb.gateway.entity.ModbusConfig;
 
 import javax.lang.model.type.TypeKind;
 import java.io.IOException;
@@ -23,7 +22,7 @@ public class ModbusConnectors extends Connector {
      */
     @Override
     public void run() {
-        ModbusConfig modbusConfig = (ModbusConfig) deviceConfig;
+        ModbusConfig modbusConfig = (ModbusConfig) baseConfig;
 
         String port = modbusConfig.getPort();
         Integer stopBits = modbusConfig.getStopbits();

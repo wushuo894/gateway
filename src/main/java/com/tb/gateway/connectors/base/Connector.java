@@ -2,12 +2,9 @@ package com.tb.gateway.connectors.base;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import com.tb.gateway.Main;
-import com.tb.gateway.entity.DeviceConfig;
 import com.tb.gateway.tb.TbClient;
 import lombok.Data;
 import lombok.experimental.Accessors;
-import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 import java.util.Date;
 import java.util.List;
@@ -23,7 +20,7 @@ public abstract class Connector implements Runnable {
     /**
      * 配置文件
      */
-    protected DeviceConfig deviceConfig;
+    protected BaseConfig baseConfig;
 
     /**
      * 数据转换
@@ -45,7 +42,7 @@ public abstract class Connector implements Runnable {
     public abstract Object serverSideRpcHandler(JsonObject jsonObject);
 
     public void telemetry(Map<String, Object> map) {
-        String deviceName = deviceConfig.getDeviceName();
+        String deviceName = baseConfig.getDeviceName();
         Map<String, List<Object>> msg = Map.of(deviceName, List.of(Map.of(
                 "ts", new Date().getTime(),
                 "values", map

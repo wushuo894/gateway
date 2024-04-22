@@ -1,11 +1,9 @@
-package com.tb.gateway.entity;
+package com.tb.gateway.connectors.base;
 
 import com.tb.gateway.connectors.base.Connector;
 import com.tb.gateway.connectors.base.Converter;
-import com.tb.gateway.eum.DeviceType;
+import com.tb.gateway.enums.DeviceType;
 import lombok.Data;
-import lombok.Generated;
-import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 
@@ -16,7 +14,7 @@ import java.io.Serializable;
  */
 @Data
 @Accessors(chain = true)
-public class DeviceConfig implements Serializable {
+public class BaseConfig implements Serializable {
     /**
      * 设备名称
      */

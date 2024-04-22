@@ -6,7 +6,7 @@ import com.google.gson.Gson;
 import com.tb.gateway.connectors.base.Connector;
 import com.tb.gateway.entity.Config;
 import com.tb.gateway.tb.TbClient;
-import com.tb.gateway.util.GatewayUtil;
+import com.tb.gateway.utils.GatewayUtil;
 
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;

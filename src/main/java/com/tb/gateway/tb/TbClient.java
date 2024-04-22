@@ -11,7 +11,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.tb.gateway.connectors.base.Connector;
 import com.tb.gateway.entity.Config;
-import com.tb.gateway.entity.DeviceConfig;
+import com.tb.gateway.connectors.base.BaseConfig;
 import com.tb.gateway.entity.GatewayConfig;
 import com.tb.gateway.entity.ThingsBoardConfig;
 import lombok.Data;
@@ -76,13 +76,13 @@ public class TbClient {
                 log.info("rpc: {}", jsonObject);
                 String device = jsonObject.get("device").getAsString();
                 GatewayConfig gatewayConfig = Config.GATEWAY_CONFIG;
-                BiMap<DeviceConfig, Connector> connectorsMap = Config.CONNECTORS_MAP;
-                for (DeviceConfig deviceConfig : gatewayConfig.getConnectors()) {
-                    String deviceName = deviceConfig.getDeviceName();
+                BiMap<BaseConfig, Connector> connectorsMap = Config.CONNECTORS_MAP;
+                for (BaseConfig baseConfig : gatewayConfig.getConnectors()) {
+                    String deviceName = baseConfig.getDeviceName();
                     if (!device.equals(deviceName)) {
                         continue;
                     }
-                    Connector connector = connectorsMap.get(deviceConfig);
+                    Connector connector = connectorsMap.get(baseConfig);
                     Object o = connector.serverSideRpcHandler(jsonObject);
 
                     String id = jsonObject.get("data").getAsJsonObject()

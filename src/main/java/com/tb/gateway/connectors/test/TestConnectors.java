@@ -5,7 +5,6 @@ import cn.hutool.log.Log;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.tb.gateway.connectors.base.Connector;
-import com.tb.gateway.entity.TestConfig;
 
 import java.util.Date;
 import java.util.Map;
@@ -15,7 +14,7 @@ public class TestConnectors extends Connector {
 
     @Override
     public void run() {
-        TestConfig modbusConfig = (TestConfig) deviceConfig;
+        TestConfig modbusConfig = (TestConfig) baseConfig;
         while (true) {
             telemetry(Map.of(
                     "test", new Date().getTime()

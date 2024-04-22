@@ -1,5 +1,6 @@
-package com.tb.gateway.entity;
+package com.tb.gateway.connectors.modbus;
 
+import com.tb.gateway.connectors.base.BaseConfig;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
@@ -10,7 +11,7 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = true)
 @Data
 @Accessors(chain = true)
-public class ModbusConfig extends DeviceConfig {
+public class ModbusConfig extends BaseConfig {
     /**
      * 从机地址
      */
