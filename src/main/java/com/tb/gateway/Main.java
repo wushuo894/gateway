@@ -4,6 +4,7 @@ import cn.hutool.core.thread.ThreadUtil;
 import cn.hutool.log.Log;
 import com.google.gson.Gson;
 import com.tb.gateway.config.ThreadConfig;
+import com.tb.gateway.connectors.base.BaseConfig;
 import com.tb.gateway.connectors.base.Connector;
 import com.tb.gateway.config.Config;
 import com.tb.gateway.tb.TbClient;
@@ -22,10 +23,10 @@ public class Main {
         TbClient.connect();
         TbClient.subscribe();
         log.info(gson.toJson(Config.GATEWAY_CONFIG));
-        Collection<Connector> connectors = Config.CONNECTORS_MAP.values();
+        Collection<Connector<? extends BaseConfig>> connectors = Config.CONNECTORS_MAP.values();
         ExecutorService executor = ThreadConfig
                 .EXECUTOR;
-        for (Connector connector : connectors) {
+        for (Connector<? extends BaseConfig> connector : connectors) {
             executor.submit(() -> {
                 try {
                     connector.run();

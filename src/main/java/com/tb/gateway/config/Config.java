@@ -9,5 +9,5 @@ import java.util.HashMap;
 public class Config {
     public static GatewayConfig GATEWAY_CONFIG;
     public static ThingsBoardConfig THINGS_BOARD_CONFIG;
-    public static BiMap<BaseConfig, Connector> CONNECTORS_MAP = new BiMap<>(new HashMap<>());
+    public static BiMap<BaseConfig, Connector<? extends BaseConfig>> CONNECTORS_MAP = new BiMap<>(new HashMap<>());
 }

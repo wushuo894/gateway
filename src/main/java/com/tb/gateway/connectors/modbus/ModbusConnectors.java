@@ -6,14 +6,12 @@ import cn.hutool.core.util.HexUtil;
 import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.log.Log;
 import com.fazecast.jSerialComm.SerialPort;
-import com.ghgande.j2mod.modbus.io.BytesInputStream;
 import com.ghgande.j2mod.modbus.io.ModbusSerialTransaction;
 import com.ghgande.j2mod.modbus.msg.ModbusRequest;
 import com.ghgande.j2mod.modbus.msg.ModbusResponse;
 import com.ghgande.j2mod.modbus.net.SerialConnection;
 import com.ghgande.j2mod.modbus.procimg.ObservableRegister;
 import com.ghgande.j2mod.modbus.procimg.Register;
-import com.ghgande.j2mod.modbus.procimg.SimpleRegister;
 import com.ghgande.j2mod.modbus.util.SerialParameters;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
@@ -30,7 +28,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.BiFunction;
 
-public class ModbusConnectors extends Connector {
+public class ModbusConnectors extends Connector<ModbusConfig> {
     private final Log log = Log.get(ModbusConfig.class);
 
     public static final Map<String, SerialConnection> STRING_SERIAL_CONNECTION_MAP = new HashMap<>();
@@ -41,13 +39,12 @@ public class ModbusConnectors extends Connector {
      */
     @Override
     public void run() {
-        ModbusConfig modbusConfig = (ModbusConfig) baseConfig;
-        List<ModbusConfig.ModbusInfo> timeseries = modbusConfig.getTimeseries();
+        List<ModbusConfig.ModbusInfo> timeseries = config.getTimeseries();
         while (true) {
             for (ModbusConfig.ModbusInfo modbusInfo : timeseries) {
                 String tag = modbusInfo.getTag();
                 try {
-                    Object execute = execute(modbusConfig, modbusInfo);
+                    Object execute = execute(config, modbusInfo);
                     telemetry(Map.of(tag, execute));
                 } catch (IOException e) {
                     log.error(e, e.getMessage());
@@ -68,9 +65,8 @@ public class ModbusConnectors extends Connector {
         JsonObject data = jsonObject.get("data").getAsJsonObject();
         String method = data.get("method").getAsString();
         JsonElement params = data.get("params");
-        ModbusConfig modbusConfig = (ModbusConfig) baseConfig;
 
-        List<ModbusConfig.ModbusInfo> rpc = modbusConfig.getRpc();
+        List<ModbusConfig.ModbusInfo> rpc = config.getRpc();
         for (ModbusConfig.ModbusInfo modbusInfo : rpc) {
             String tag = modbusInfo.getTag();
             if (!tag.equals(method)) {
@@ -78,7 +74,7 @@ public class ModbusConnectors extends Connector {
             }
 
             try {
-                return execute(modbusConfig, modbusInfo, params);
+                return execute(config, modbusInfo, params);
             } catch (IOException e) {
                 log.error(e, e.getMessage());
             }
@@ -98,7 +94,6 @@ public class ModbusConnectors extends Connector {
         Integer stopBits = modbusConfig.getStopbits();
         Integer databits = modbusConfig.getDatabits();
         Integer baudrate = modbusConfig.getBaudrate();
-        Integer unitId = modbusConfig.getUnitId();
         String parity = modbusConfig.getParity();
 
         SerialParameters parameters = new SerialParameters();
@@ -140,66 +135,28 @@ public class ModbusConnectors extends Connector {
         try {
             // 创建Modbus RTU事务
             ModbusSerialTransaction transaction = new ModbusSerialTransaction(connection);
-            Integer address = modbusInfo.getAddress();
-            Integer functionCode = modbusInfo.getFunctionCode();
-            Integer objectsCount = modbusInfo.getObjectsCount();
-            ModbusDataType modbusDataType = modbusInfo.getType();
-            ModbusRequest request = ModbusRequest.createModbusRequest(functionCode);
-            try {
-                ReflectUtil.setFieldValue(request, "reference", address);
-            } catch (Exception ignored) {
-            }
-            try {
-                ReflectUtil.setFieldValue(request, "wordCount", objectsCount);
-            } catch (Exception ignored) {
-            }
-            request.setUnitID(unitId);
-            request.setHeadless(true);
-            if (bytes.length > 0) {
-                Register register = new ObservableRegister();
-                register.setValue(bytes);
-                try {
-                    ReflectUtil.invoke(request, "setRegister", register);
-                } catch (Exception e) {
 
-                }
+            Register register = new ObservableRegister();
+            if (bytes.length > 0) {
+                register.setValue(bytes);
             }
+
+            // 发送
+            ModbusRequest request = ModbusUtil.createModbusRequest(modbusConfig, modbusInfo, register);
             String hexMessage = request.getHexMessage();
-            log.info("request: {}", hexMessage);
+            log.debug("request: {}", hexMessage);
             transaction.setRequest(request);
             transaction.execute();
+
+            // 获取响应结果
             ModbusResponse response = transaction.getResponse();
             byte[] message = response.getMessage();
-            log.info("response: {}", response.getHexMessage());
-            BiFunction<Byte[], Integer, Object> fun = modbusDataTypeMap.get(modbusDataType);
-            return fun.apply(ArrayUtil.wrap(message), objectsCount);
+            log.debug("response: {}", response.getHexMessage());
+            return ModbusUtil.toType(modbusInfo, message);
         } catch (Exception e) {
             log.error(e, e.getMessage());
         }
         return null;
     }
-
-    public final Map<ModbusDataType, BiFunction<Byte[], Integer, Object>> modbusDataTypeMap = Map.of(
-            ModbusDataType.INT16, (bytes, count) -> {
-                Integer length = ModbusDataType.INT16.getLength();
-                int i = length * count;
-                Byte[] sub = ArrayUtil.sub(bytes, -i, bytes.length);
-                String s = HexUtil.encodeHexStr(ArrayUtil.unWrap(sub));
-                return HexUtil.hexToInt(s);
-            },
-            ModbusDataType.INT32, (bytes, count) -> {
-                Integer length = ModbusDataType.INT32.getLength();
-                int i = length * count;
-                Byte[] sub = ArrayUtil.sub(bytes, -i, bytes.length);
-                String s = HexUtil.encodeHexStr(ArrayUtil.unWrap(sub));
-                return HexUtil.hexToInt(s);
-            },
-            ModbusDataType.STRING, (bytes, count) -> {
-                Integer length = ModbusDataType.STRING.getLength();
-                int i = length * count;
-                Byte[] sub = ArrayUtil.sub(bytes, -i, bytes.length);
-                return HexUtil.encodeHexStr(ArrayUtil.unWrap(sub));
-            }
-    );
 
 }

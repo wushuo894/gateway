@@ -9,12 +9,11 @@ import com.tb.gateway.connectors.base.Connector;
 import java.util.Date;
 import java.util.Map;
 
-public class TestConnectors extends Connector {
+public class TestConnectors extends Connector<TestConfig> {
     private final Log log = Log.get(TestConnectors.class);
 
     @Override
     public void run() {
-        TestConfig modbusConfig = (TestConfig) baseConfig;
         while (true) {
             telemetry(Map.of(
                     "test", new Date().getTime()
@@ -28,7 +27,7 @@ public class TestConnectors extends Connector {
         JsonObject data = jsonObject.get("data").getAsJsonObject();
         String method = data.get("method").getAsString();
         JsonElement params = data.get("params");
-        log.info("serverSideRpcHandle: {}", jsonObject);
+        log.debug("serverSideRpcHandle: {}", jsonObject);
         return "ok";
     }
 }

@@ -65,7 +65,7 @@ public class TbClient {
         MqttMessage mqttMessage = new MqttMessage();
         mqttMessage.setPayload(msg.getBytes(StandardCharsets.UTF_8));
         try {
-            log.info("send: {}", msg);
+            log.debug("send: {}", msg);
             mqttClient.publish(topic, mqttMessage);
         } catch (MqttException e) {
             log.error(e, e.getMessage());
@@ -77,13 +77,13 @@ public class TbClient {
                 log.info("rpc: {}", jsonObject);
                 String device = jsonObject.get("device").getAsString();
                 GatewayConfig gatewayConfig = Config.GATEWAY_CONFIG;
-                BiMap<BaseConfig, Connector> connectorsMap = Config.CONNECTORS_MAP;
+                BiMap<BaseConfig, Connector<? extends BaseConfig>> connectorsMap = Config.CONNECTORS_MAP;
                 for (BaseConfig baseConfig : gatewayConfig.getConnectors()) {
                     String deviceName = baseConfig.getDeviceName();
                     if (!device.equals(deviceName)) {
                         continue;
                     }
-                    Connector connector = connectorsMap.get(baseConfig);
+                    Connector<? extends BaseConfig> connector = connectorsMap.get(baseConfig);
                     Object o = connector.serverSideRpcHandler(jsonObject);
 
                     if (Objects.isNull(o)) {
@@ -122,7 +122,7 @@ public class TbClient {
             @Override
             public void messageArrived(String topic, MqttMessage message) throws Exception {
                 if (!functionMap.containsKey(topic)) {
-                    log.info("not subscribe: {}", topic);
+                    log.debug("not subscribe: {}", topic);
                     return;
                 }
                 ThreadConfig.EXECUTOR.submit(() -> {
@@ -131,7 +131,7 @@ public class TbClient {
                     );
                     try {
                         String apply = functionMap.get(topic).apply(jsonObject);
-                        log.info("callback: {}", apply);
+                        log.debug("callback: {}", apply);
                         message.setPayload(apply.getBytes(StandardCharsets.UTF_8));
                         mqttClient.publish(topic, message);
                     } catch (Exception e) {
@@ -148,7 +148,7 @@ public class TbClient {
                         return;
                     }
                     String s = message.toString();
-                    log.info("msg: {}", s);
+                    log.debug("msg: {}", s);
                 } catch (MqttException e) {
                     log.error(e, e.getMessage());
                 }

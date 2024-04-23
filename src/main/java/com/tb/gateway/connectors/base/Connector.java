@@ -15,12 +15,12 @@ import java.util.Map;
  */
 @Data
 @Accessors(chain = true)
-public abstract class Connector implements Runnable {
+public abstract class Connector<T extends BaseConfig> implements Runnable {
 
     /**
      * 配置文件
      */
-    protected BaseConfig baseConfig;
+    protected T config;
 
     /**
      * 数据转换
@@ -42,7 +42,7 @@ public abstract class Connector implements Runnable {
     public abstract Object serverSideRpcHandler(JsonObject jsonObject);
 
     public void telemetry(Map<String, Object> map) {
-        String deviceName = baseConfig.getDeviceName();
+        String deviceName = config.getDeviceName();
         Map<String, List<Object>> msg = Map.of(deviceName, List.of(Map.of(
                 "ts", new Date().getTime(),
                 "values", map
@@ -50,4 +50,7 @@ public abstract class Connector implements Runnable {
         TbClient.publish("v1/gateway/telemetry", new Gson().toJson(msg));
     }
 
+    public void setConfig(BaseConfig baseConfig){
+        this.config = (T) baseConfig;
+    }
 }

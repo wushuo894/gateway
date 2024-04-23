@@ -1,7 +1,5 @@
 package com.tb.gateway.connectors.base;
 
-import com.tb.gateway.connectors.base.Connector;
-import com.tb.gateway.connectors.base.Converter;
 import com.tb.gateway.enums.DeviceType;
 import lombok.Data;
 import lombok.Setter;
@@ -35,7 +33,7 @@ public class BaseConfig implements Serializable {
      * 设备连接
      */
     @Setter
-    private Connector connector;
+    private Connector<? extends BaseConfig> connector;
     /**
      * 数据转换
      */

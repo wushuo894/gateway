@@ -1,11 +1,11 @@
 {
   "thingsboard": {
-//    "host": "192.168.196.88",
-//    "port": 1883,
-//    "userName": "mpyKAWTmDWOXEDzEXSOD"
-        "host": "192.168.1.196",
-        "port": 1883,
-        "userName": "56pu1mj202hsp1jr1kgl"
+    "host": "192.168.196.88",
+    "port": 1883,
+    "userName": "mpyKAWTmDWOXEDzEXSOD"
+//        "host": "192.168.1.196",
+//        "port": 1883,
+//        "userName": "56pu1mj202hsp1jr1kgl"
   },
   "connectors": [
 //    {
@@ -13,16 +13,16 @@
 //      "deviceType": "MODBUS",
 //      "fileName": "modbus1.json5"
 //    },
-    {
-      "deviceName": "温湿度",
-      "deviceType": "MODBUS",
-      "fileName": "modbus2.json5"
-    },
 //    {
-//      "deviceName": "test",
-//      "deviceType": "TEST",
-//      "fileName": "test.json5"
-//    }
+//      "deviceName": "温湿度",
+//      "deviceType": "MODBUS",
+//      "fileName": "modbus2.json5"
+//    },
+    {
+      "deviceName": "test",
+      "deviceType": "TEST",
+      "fileName": "test.json5"
+    }
   ],
   "thread": {
     "corePoolSize": 4,

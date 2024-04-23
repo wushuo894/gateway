@@ -50,25 +50,30 @@ public class GatewayUtil {
                 .stream()
                 .collect(Collectors.toMap(c -> c.getSimpleName().toUpperCase(), m -> m));
 
-        BiMap<BaseConfig, Connector> connectorsMap = Config.CONNECTORS_MAP;
+        BiMap<BaseConfig, Connector<? extends BaseConfig>> connectorsMap = Config.CONNECTORS_MAP;
 
         baseConfigList = baseConfigList.stream()
                 .filter(Objects::nonNull)
                 .map(config -> {
                     DeviceType deviceType = config.getDeviceType();
                     String name = deviceType.name();
-                    Class<?> configClass = collect.get((name + "Config").toUpperCase());
-                    Class<?> connectorsClass = collect.get((name + "Connectors").toUpperCase());
-                    if (Objects.isNull(configClass)) {
+                    String configClassName = name + "Config";
+                    String connectorsClassName = name + "Connectors";
+                    Class<?> configClass = collect.get(configClassName.toUpperCase());
+                    Class<?> connectorsClass = collect.get(connectorsClassName.toUpperCase());
+                    if (Objects.isNull(configClass) || Objects.isNull(connectorsClass)) {
                         return config;
                     }
+
+                    log.info("load configClassName: {}", configClassName);
+                    log.info("load connectorsClassName: {}", connectorsClassName);
 
                     String s = FileUtil.readUtf8String(new File("config" + File.separator + config.getFileName()));
 
                     BaseConfig baseConfig = (BaseConfig) gson.fromJson(s, configClass);
                     baseConfig.setDeviceName(config.getDeviceName());
-                    Connector connector = (Connector) ReflectUtil.newInstance(connectorsClass);
-                    connector.setBaseConfig(baseConfig);
+                    Connector<? extends BaseConfig> connector = (Connector<? extends BaseConfig>) ReflectUtil.newInstance(connectorsClass);
+                    connector.setConfig(baseConfig);
 
                     connectorsMap.put(baseConfig, connector);
                     return baseConfig;
