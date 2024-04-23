@@ -1,12 +1,15 @@
 {
   "thingsboard": {
-    "host": "192.168.196.88",
-    "port": 1883,
-    "userName": "mpyKAWTmDWOXEDzEXSOD"
+//    "host": "192.168.196.88",
+//    "port": 1883,
+//    "userName": "mpyKAWTmDWOXEDzEXSOD"
+        "host": "192.168.1.196",
+        "port": 1883,
+        "userName": "56pu1mj202hsp1jr1kgl"
   },
   "connectors": [
     {
-      "deviceName": "温湿度",
+      "deviceName": "无线空调控制器",
       "deviceType": "MODBUS",
       "fileName": "modbus1.json5"
     },

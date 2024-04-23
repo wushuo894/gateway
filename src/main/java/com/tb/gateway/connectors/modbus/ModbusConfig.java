@@ -1,6 +1,7 @@
 package com.tb.gateway.connectors.modbus;
 
 import com.tb.gateway.connectors.base.BaseConfig;
+import com.tb.gateway.enums.ModbusDataType;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
@@ -57,9 +58,10 @@ public class ModbusConfig extends BaseConfig {
     @Accessors(chain = true)
     public static class ModbusInfo {
         private String tag;
-        private TypeKind type;
+        private ModbusDataType type;
         private Integer functionCode;
         private Integer objectsCount;
         private Integer address;
     }
+
 }
