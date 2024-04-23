@@ -8,16 +8,21 @@
         "userName": "56pu1mj202hsp1jr1kgl"
   },
   "connectors": [
+//    {
+//      "deviceName": "无线空调控制器",
+//      "deviceType": "MODBUS",
+//      "fileName": "modbus1.json5"
+//    },
     {
-      "deviceName": "无线空调控制器",
+      "deviceName": "温湿度",
       "deviceType": "MODBUS",
-      "fileName": "modbus1.json5"
+      "fileName": "modbus2.json5"
     },
-    {
-      "deviceName": "test",
-      "deviceType": "TEST",
-      "fileName": "test.json5"
-    }
+//    {
+//      "deviceName": "test",
+//      "deviceType": "TEST",
+//      "fileName": "test.json5"
+//    }
   ],
   "thread": {
     "corePoolSize": 4,

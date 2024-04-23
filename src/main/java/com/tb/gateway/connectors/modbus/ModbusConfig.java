@@ -39,6 +39,11 @@ public class ModbusConfig extends BaseConfig {
     private Integer stopbits;
 
     /**
+     * 校验
+     */
+    private String parity;
+
+    /**
      * 遥测数据
      */
     private List<ModbusInfo> timeseries;

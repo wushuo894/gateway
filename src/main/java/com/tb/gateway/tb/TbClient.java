@@ -100,7 +100,7 @@ public class TbClient {
                     );
                     return gson.toJson(retData);
                 }
-                throw new RuntimeException("不存在的设备: " + device);
+                return null;
             });
 
     /**

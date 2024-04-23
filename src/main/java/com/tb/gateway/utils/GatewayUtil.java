@@ -53,6 +53,7 @@ public class GatewayUtil {
         BiMap<BaseConfig, Connector> connectorsMap = Config.CONNECTORS_MAP;
 
         baseConfigList = baseConfigList.stream()
+                .filter(Objects::nonNull)
                 .map(config -> {
                     DeviceType deviceType = config.getDeviceType();
                     String name = deviceType.name();

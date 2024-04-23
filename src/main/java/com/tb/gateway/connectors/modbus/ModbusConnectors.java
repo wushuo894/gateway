@@ -1,7 +1,9 @@
 package com.tb.gateway.connectors.modbus;
 
 import cn.hutool.core.thread.ThreadUtil;
-import cn.hutool.core.util.*;
+import cn.hutool.core.util.ArrayUtil;
+import cn.hutool.core.util.HexUtil;
+import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.log.Log;
 import com.fazecast.jSerialComm.SerialPort;
 import com.ghgande.j2mod.modbus.io.BytesInputStream;
@@ -9,6 +11,9 @@ import com.ghgande.j2mod.modbus.io.ModbusSerialTransaction;
 import com.ghgande.j2mod.modbus.msg.ModbusRequest;
 import com.ghgande.j2mod.modbus.msg.ModbusResponse;
 import com.ghgande.j2mod.modbus.net.SerialConnection;
+import com.ghgande.j2mod.modbus.procimg.ObservableRegister;
+import com.ghgande.j2mod.modbus.procimg.Register;
+import com.ghgande.j2mod.modbus.procimg.SimpleRegister;
 import com.ghgande.j2mod.modbus.util.SerialParameters;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
@@ -16,10 +21,13 @@ import com.google.gson.JsonObject;
 import com.tb.gateway.connectors.base.Connector;
 import com.tb.gateway.enums.ModbusDataType;
 
-import java.io.*;
-import java.lang.reflect.Constructor;
+import java.io.IOException;
+import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.function.BiFunction;
 
 public class ModbusConnectors extends Connector {
@@ -27,7 +35,6 @@ public class ModbusConnectors extends Connector {
 
     public static final Map<String, SerialConnection> STRING_SERIAL_CONNECTION_MAP = new HashMap<>();
     public static Gson gson = new Gson();
-    public static final Map<Integer, Class<?>> FUNC_CODE_MAP = new HashMap<>();
 
     /**
      * 运行
@@ -35,7 +42,6 @@ public class ModbusConnectors extends Connector {
     @Override
     public void run() {
         ModbusConfig modbusConfig = (ModbusConfig) baseConfig;
-        loadFuncCodeMap();
         List<ModbusConfig.ModbusInfo> timeseries = modbusConfig.getTimeseries();
         while (true) {
             for (ModbusConfig.ModbusInfo modbusInfo : timeseries) {
@@ -81,36 +87,6 @@ public class ModbusConnectors extends Connector {
         return null;
     }
 
-    public synchronized void loadFuncCodeMap() {
-        Set<Class<?>> classes = ClassUtil.scanPackage("com.ghgande.j2mod.modbus.msg");
-        for (Class<?> aClass : classes) {
-            Class<?> superclass = aClass.getSuperclass();
-            if (Objects.isNull(superclass)) {
-                continue;
-            }
-            String name = superclass.getName();
-            if (!name.equals("com.ghgande.j2mod.modbus.msg.ModbusRequest")) {
-                continue;
-            }
-            Constructor<?> constructor = ReflectUtil.getConstructor(aClass);
-            if (Objects.isNull(constructor)) {
-                continue;
-            }
-            if (constructor.getParameterCount() > 0) {
-                continue;
-            }
-            ModbusRequest modbusRequest;
-            try {
-                modbusRequest = (ModbusRequest) constructor.newInstance();
-            } catch (Exception e) {
-                log.error(e, e.getMessage());
-                continue;
-            }
-            int functionCode = modbusRequest.getFunctionCode();
-            FUNC_CODE_MAP.put(functionCode, aClass);
-        }
-    }
-
     public Object execute(ModbusConfig modbusConfig, ModbusConfig.ModbusInfo modbusInfo) throws IOException {
         return execute(modbusConfig, modbusInfo, null);
     }
@@ -123,12 +99,14 @@ public class ModbusConnectors extends Connector {
         Integer databits = modbusConfig.getDatabits();
         Integer baudrate = modbusConfig.getBaudrate();
         Integer unitId = modbusConfig.getUnitId();
+        String parity = modbusConfig.getParity();
 
         SerialParameters parameters = new SerialParameters();
         parameters.setPortName(port);
         parameters.setBaudRate(baudrate);
         parameters.setDatabits(databits);
-        parameters.setParity(SerialPort.EVEN_PARITY);
+        Field field = ReflectUtil.getField(SerialPort.class, parity);
+        parameters.setParity((Integer) ReflectUtil.getStaticFieldValue(field));
         parameters.setStopbits(stopBits);
 
         SerialConnection connection;
@@ -149,9 +127,9 @@ public class ModbusConnectors extends Connector {
 
         byte[] bytes = new byte[0];
 
-        if (Objects.nonNull(params)) {
+        if (Objects.nonNull(params) && !params.isJsonNull()) {
             if (List.of(ModbusDataType.INT16, ModbusDataType.INT32).contains(type)) {
-                bytes = new byte[]{params.getAsNumber().byteValue()};
+                bytes = HexUtil.toHex(params.getAsNumber().intValue()).getBytes(StandardCharsets.UTF_8);
             }
 
             if (ModbusDataType.STRING.equals(type)) {
@@ -166,13 +144,25 @@ public class ModbusConnectors extends Connector {
             Integer functionCode = modbusInfo.getFunctionCode();
             Integer objectsCount = modbusInfo.getObjectsCount();
             ModbusDataType modbusDataType = modbusInfo.getType();
-            Class<?> aClass = FUNC_CODE_MAP.get(functionCode);
-            log.info(aClass.getName());
-            ModbusRequest request = (ModbusRequest) ReflectUtil.newInstance(aClass, address, objectsCount);
+            ModbusRequest request = ModbusRequest.createModbusRequest(functionCode);
+            try {
+                ReflectUtil.setFieldValue(request, "reference", address);
+            } catch (Exception ignored) {
+            }
+            try {
+                ReflectUtil.setFieldValue(request, "wordCount", objectsCount);
+            } catch (Exception ignored) {
+            }
             request.setUnitID(unitId);
             request.setHeadless(true);
             if (bytes.length > 0) {
-                request.readData(new BytesInputStream(bytes));
+                Register register = new ObservableRegister();
+                register.setValue(bytes);
+                try {
+                    ReflectUtil.invoke(request, "setRegister", register);
+                } catch (Exception e) {
+
+                }
             }
             String hexMessage = request.getHexMessage();
             log.info("request: {}", hexMessage);
@@ -186,7 +176,7 @@ public class ModbusConnectors extends Connector {
         } catch (Exception e) {
             log.error(e, e.getMessage());
         }
-        return "NULL";
+        return null;
     }
 
     public final Map<ModbusDataType, BiFunction<Byte[], Integer, Object>> modbusDataTypeMap = Map.of(
