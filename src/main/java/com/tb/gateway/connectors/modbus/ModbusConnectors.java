@@ -1,7 +1,6 @@
 package com.tb.gateway.connectors.modbus;
 
 import cn.hutool.core.thread.ThreadUtil;
-import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.HexUtil;
 import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.log.Log;
@@ -26,7 +25,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.function.BiFunction;
 
 public class ModbusConnectors extends Connector<ModbusConfig> {
     private final Log log = Log.get(ModbusConfig.class);

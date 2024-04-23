@@ -34,8 +34,4 @@ public class BaseConfig implements Serializable {
      */
     @Setter
     private Connector<? extends BaseConfig> connector;
-    /**
-     * 数据转换
-     */
-    private Converter<?, ?> converter;
 }

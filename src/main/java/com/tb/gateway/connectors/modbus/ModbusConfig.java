@@ -6,7 +6,6 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 
-import javax.lang.model.type.TypeKind;
 import java.util.List;
 
 @EqualsAndHashCode(callSuper = true)

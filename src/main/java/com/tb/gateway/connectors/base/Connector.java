@@ -23,11 +23,6 @@ public abstract class Connector<T extends BaseConfig> implements Runnable {
     protected T config;
 
     /**
-     * 数据转换
-     */
-    protected Converter<?, ?> converter;
-
-    /**
      * 运行
      */
     @Override

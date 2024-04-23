@@ -5,6 +5,7 @@ import cn.hutool.core.map.BiMap;
 import cn.hutool.core.util.ClassUtil;
 import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.ReflectUtil;
+import cn.hutool.core.util.TypeUtil;
 import cn.hutool.log.Log;
 import com.google.gson.Gson;
 import com.tb.gateway.config.ThreadConfig;
@@ -15,6 +16,7 @@ import com.tb.gateway.config.GatewayConfig;
 import com.tb.gateway.enums.DeviceType;
 
 import java.io.File;
+import java.lang.reflect.Method;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -46,10 +48,6 @@ public class GatewayUtil {
         thread.init();
         gatewayConfig.setThread(thread);
 
-        Map<String, ? extends Class<?>> collect = ClassUtil.scanPackage("com.tb.gateway")
-                .stream()
-                .collect(Collectors.toMap(c -> c.getSimpleName().toUpperCase(), m -> m));
-
         BiMap<BaseConfig, Connector<? extends BaseConfig>> connectorsMap = Config.CONNECTORS_MAP;
 
         baseConfigList = baseConfigList.stream()
@@ -57,22 +55,22 @@ public class GatewayUtil {
                 .map(config -> {
                     DeviceType deviceType = config.getDeviceType();
                     String name = deviceType.name();
-                    String configClassName = name + "Config";
-                    String connectorsClassName = name + "Connectors";
-                    Class<?> configClass = collect.get(configClassName.toUpperCase());
-                    Class<?> connectorsClass = collect.get(connectorsClassName.toUpperCase());
-                    if (Objects.isNull(configClass) || Objects.isNull(connectorsClass)) {
+                    Class<?> connectorsClass = deviceType.getConnectorClass();
+                    if (Objects.isNull(connectorsClass)) {
                         return config;
                     }
 
-                    log.info("load configClassName: {}", configClassName);
-                    log.info("load connectorsClassName: {}", connectorsClassName);
+                    log.info("load connectorsClassName: {}", connectorsClass.getName());
 
                     String s = FileUtil.readUtf8String(new File("config" + File.separator + config.getFileName()));
 
-                    BaseConfig baseConfig = (BaseConfig) gson.fromJson(s, configClass);
-                    baseConfig.setDeviceName(config.getDeviceName());
                     Connector<? extends BaseConfig> connector = (Connector<? extends BaseConfig>) ReflectUtil.newInstance(connectorsClass);
+
+                    Method getConfig = ReflectUtil.getMethod(connectorsClass, "getConfig");
+                    Class<?> returnClass = TypeUtil.getReturnClass(getConfig);
+
+                    BaseConfig baseConfig = (BaseConfig) gson.fromJson(s, returnClass);
+                    baseConfig.setDeviceName(config.getDeviceName());
                     connector.setConfig(baseConfig);
 
                     connectorsMap.put(baseConfig, connector);
