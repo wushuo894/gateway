@@ -86,13 +86,17 @@ public class TbClient {
                     Connector connector = connectorsMap.get(baseConfig);
                     Object o = connector.serverSideRpcHandler(jsonObject);
 
+                    if (Objects.isNull(o)) {
+                        continue;
+                    }
+
                     String id = jsonObject.get("data").getAsJsonObject()
                             .get("id").getAsString();
 
                     Map<String, Object> retData = Map.of(
                             "device", deviceName,
                             "id", id,
-                            "data", ObjUtil.defaultIfNull(o, "null")
+                            "data", o
                     );
                     return gson.toJson(retData);
                 }
