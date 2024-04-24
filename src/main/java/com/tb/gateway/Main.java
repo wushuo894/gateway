@@ -19,7 +19,7 @@ import java.util.concurrent.TimeUnit;
 
 public class Main {
     static {
-        ConsoleLog.setLevel(Level.DEBUG);
+        ConsoleLog.setLevel(Level.INFO);
         LogFactory.setCurrentLogFactory(new ConsoleColorLogFactory());
     }
 

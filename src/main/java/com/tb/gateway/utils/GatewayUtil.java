@@ -7,6 +7,7 @@ import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.TypeUtil;
 import cn.hutool.log.Log;
+import cn.hutool.log.dialect.console.ConsoleLog;
 import com.google.gson.Gson;
 import com.tb.gateway.config.Config;
 import com.tb.gateway.config.GatewayConfig;
@@ -47,6 +48,8 @@ public class GatewayUtil {
         GatewayConfig gatewayConfig =
                 gson.fromJson(FileUtil.readUtf8String(tbGatewayConfig.get()), GatewayConfig.class);
         List<BaseConfig> baseConfigList = gatewayConfig.getConnectors();
+
+        ConsoleLog.setLevel(gatewayConfig.getLogLevel());
 
         Config.THINGS_BOARD_CONFIG = gatewayConfig.getThingsboard();
         ThreadConfig thread = ObjUtil.defaultIfNull(gatewayConfig.getThread(), new ThreadConfig());
