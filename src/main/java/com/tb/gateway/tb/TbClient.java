@@ -57,6 +57,7 @@ public class TbClient {
             log.info("connect ok.");
         } catch (MqttException e) {
             log.error(e, e.getMessage());
+            System.exit(1);
         }
     }
 

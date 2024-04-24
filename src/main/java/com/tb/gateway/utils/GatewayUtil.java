@@ -40,6 +40,9 @@ public class GatewayUtil {
             System.exit(1);
             return;
         }
+        File configFile = tbGatewayConfig.get();
+
+        log.info("load config: {}", configFile.getName());
 
         GatewayConfig gatewayConfig =
                 gson.fromJson(FileUtil.readUtf8String(tbGatewayConfig.get()), GatewayConfig.class);
@@ -56,7 +59,6 @@ public class GatewayUtil {
                 .filter(Objects::nonNull)
                 .map(config -> {
                     DeviceType deviceType = config.getDeviceType();
-                    String name = deviceType.name();
                     Class<?> connectorsClass = deviceType.getConnectorClass();
                     if (Objects.isNull(connectorsClass)) {
                         return config;
