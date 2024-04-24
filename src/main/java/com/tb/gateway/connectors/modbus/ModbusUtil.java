@@ -85,7 +85,7 @@ public class ModbusUtil {
 
         for (List<ModbusDataType> modbusDataTypes : map.keySet()) {
             Optional<ModbusDataType> first = modbusDataTypes.stream()
-                    .filter(dataType -> !modbusDataType.name().equals(dataType.name()))
+                    .filter(dataType -> modbusDataType.name().equals(dataType.name()))
                     .findFirst();
             if (first.isEmpty()) {
                 continue;
