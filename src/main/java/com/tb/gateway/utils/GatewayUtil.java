@@ -8,16 +8,18 @@ import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.TypeUtil;
 import cn.hutool.log.Log;
 import com.google.gson.Gson;
-import com.tb.gateway.config.ThreadConfig;
-import com.tb.gateway.connectors.base.Connector;
 import com.tb.gateway.config.Config;
-import com.tb.gateway.connectors.base.BaseConfig;
 import com.tb.gateway.config.GatewayConfig;
+import com.tb.gateway.config.ThreadConfig;
+import com.tb.gateway.connectors.base.BaseConfig;
+import com.tb.gateway.connectors.base.Connector;
 import com.tb.gateway.enums.DeviceType;
 
 import java.io.File;
-import java.lang.reflect.Method;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class GatewayUtil {
@@ -66,8 +68,8 @@ public class GatewayUtil {
 
                     Connector<? extends BaseConfig> connector = (Connector<? extends BaseConfig>) ReflectUtil.newInstance(connectorsClass);
 
-                    Method getConfig = ReflectUtil.getMethod(connectorsClass, "getConfig");
-                    Class<?> returnClass = TypeUtil.getReturnClass(getConfig);
+                    Class<?> returnClass =
+                            ClassUtil.loadClass(TypeUtil.getGenerics(connectorsClass)[0].getActualTypeArguments()[0].getTypeName());
 
                     BaseConfig baseConfig = (BaseConfig) gson.fromJson(s, returnClass);
                     baseConfig.setDeviceName(config.getDeviceName());

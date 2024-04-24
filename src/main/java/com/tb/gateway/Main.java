@@ -3,10 +3,10 @@ package com.tb.gateway;
 import cn.hutool.core.thread.ThreadUtil;
 import cn.hutool.log.Log;
 import com.google.gson.Gson;
+import com.tb.gateway.config.Config;
 import com.tb.gateway.config.ThreadConfig;
 import com.tb.gateway.connectors.base.BaseConfig;
 import com.tb.gateway.connectors.base.Connector;
-import com.tb.gateway.config.Config;
 import com.tb.gateway.tb.TbClient;
 import com.tb.gateway.utils.GatewayUtil;
 

@@ -45,7 +45,7 @@ public abstract class Connector<T extends BaseConfig> implements Runnable {
         TbClient.publish("v1/gateway/telemetry", new Gson().toJson(msg));
     }
 
-    public void setConfig(BaseConfig baseConfig){
+    public void setConfig(BaseConfig baseConfig) {
         this.config = (T) baseConfig;
     }
 }

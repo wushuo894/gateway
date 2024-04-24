@@ -1,27 +1,20 @@
 package com.tb.gateway.connectors.modbus;
 
 import cn.hutool.core.thread.ThreadUtil;
-import cn.hutool.core.util.HexUtil;
-import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.log.Log;
-import com.fazecast.jSerialComm.SerialPort;
 import com.ghgande.j2mod.modbus.io.ModbusSerialTransaction;
 import com.ghgande.j2mod.modbus.msg.ModbusRequest;
 import com.ghgande.j2mod.modbus.msg.ModbusResponse;
 import com.ghgande.j2mod.modbus.net.SerialConnection;
 import com.ghgande.j2mod.modbus.procimg.ObservableRegister;
 import com.ghgande.j2mod.modbus.procimg.Register;
-import com.ghgande.j2mod.modbus.util.SerialParameters;
-import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.tb.gateway.connectors.base.Connector;
 import com.tb.gateway.enums.ModbusDataType;
 
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -29,16 +22,13 @@ import java.util.Objects;
 public class ModbusConnectors extends Connector<ModbusConfig> {
     private final Log log = Log.get(ModbusConfig.class);
 
-    public static final Map<String, SerialConnection> STRING_SERIAL_CONNECTION_MAP = new HashMap<>();
-    public static Gson gson = new Gson();
-
     /**
      * 运行
      */
     @Override
     public void run() {
         List<ModbusConfig.ModbusInfo> timeseries = config.getTimeseries();
-        while (true) {
+        do {
             for (ModbusConfig.ModbusInfo modbusInfo : timeseries) {
                 String tag = modbusInfo.getTag();
                 try {
@@ -49,7 +39,7 @@ public class ModbusConnectors extends Connector<ModbusConfig> {
                 }
             }
             ThreadUtil.sleep(3000);
-        }
+        } while (true);
     }
 
     /**
@@ -75,10 +65,11 @@ public class ModbusConnectors extends Connector<ModbusConfig> {
                 return execute(config, modbusInfo, params);
             } catch (IOException e) {
                 log.error(e, e.getMessage());
+                return e.getMessage();
             }
         }
 
-        return null;
+        return "没有对应的方法";
     }
 
     public Object execute(ModbusConfig modbusConfig, ModbusConfig.ModbusInfo modbusInfo) throws IOException {
@@ -88,56 +79,24 @@ public class ModbusConnectors extends Connector<ModbusConfig> {
     public Object execute(ModbusConfig modbusConfig, ModbusConfig.ModbusInfo modbusInfo, JsonElement params) throws IOException {
         ModbusDataType type = modbusInfo.getType();
 
-        String port = modbusConfig.getPort();
-        Integer stopBits = modbusConfig.getStopbits();
-        Integer databits = modbusConfig.getDatabits();
-        Integer baudrate = modbusConfig.getBaudrate();
-        String parity = modbusConfig.getParity();
+        SerialConnection connection = ModbusUtil.getConnection(modbusConfig);
 
-        SerialParameters parameters = new SerialParameters();
-        parameters.setPortName(port);
-        parameters.setBaudRate(baudrate);
-        parameters.setDatabits(databits);
-        Field field = ReflectUtil.getField(SerialPort.class, parity);
-        parameters.setParity((Integer) ReflectUtil.getStaticFieldValue(field));
-        parameters.setStopbits(stopBits);
-
-        SerialConnection connection;
-
-        synchronized (STRING_SERIAL_CONNECTION_MAP) {
-            String key = gson.toJson(parameters);
-            if (STRING_SERIAL_CONNECTION_MAP.containsKey(key)) {
-                connection = STRING_SERIAL_CONNECTION_MAP.get(key);
-            } else {
-                connection = new SerialConnection(parameters);
-                STRING_SERIAL_CONNECTION_MAP.put(key, connection);
-            }
-
-            if (!connection.isOpen()) {
-                connection.open();
-            }
-        }
-
-        byte[] bytes = new byte[0];
+        Register register = new ObservableRegister();
 
         if (Objects.nonNull(params) && !params.isJsonNull()) {
             if (List.of(ModbusDataType.INT16, ModbusDataType.INT32).contains(type)) {
-                bytes = HexUtil.toHex(params.getAsNumber().intValue()).getBytes(StandardCharsets.UTF_8);
+                register.setValue(params.getAsNumber().intValue());
             }
 
             if (ModbusDataType.STRING.equals(type)) {
-                bytes = params.getAsString().getBytes(StandardCharsets.UTF_8);
+                byte[] bytes = params.getAsString().getBytes(StandardCharsets.UTF_8);
+                register.setValue(bytes);
             }
         }
 
         try {
             // 创建Modbus RTU事务
             ModbusSerialTransaction transaction = new ModbusSerialTransaction(connection);
-
-            Register register = new ObservableRegister();
-            if (bytes.length > 0) {
-                register.setValue(bytes);
-            }
 
             // 发送
             ModbusRequest request = ModbusUtil.createModbusRequest(modbusConfig, modbusInfo, register);
@@ -153,8 +112,8 @@ public class ModbusConnectors extends Connector<ModbusConfig> {
             return ModbusUtil.toType(modbusInfo, message);
         } catch (Exception e) {
             log.error(e, e.getMessage());
+            return e.getMessage();
         }
-        return null;
     }
 
 }

@@ -2,17 +2,64 @@ package com.tb.gateway.connectors.modbus;
 
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.HexUtil;
+import cn.hutool.core.util.ReflectUtil;
+import cn.hutool.log.Log;
+import com.fazecast.jSerialComm.SerialPort;
 import com.ghgande.j2mod.modbus.Modbus;
 import com.ghgande.j2mod.modbus.msg.*;
+import com.ghgande.j2mod.modbus.net.SerialConnection;
 import com.ghgande.j2mod.modbus.procimg.Register;
+import com.ghgande.j2mod.modbus.util.SerialParameters;
 import com.tb.gateway.enums.ModbusDataType;
 
+import java.io.IOException;
+import java.lang.reflect.Field;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
 
 public class ModbusUtil {
+
+    public static final Map<String, SerialConnection> STRING_SERIAL_CONNECTION_MAP = new HashMap<>();
+    private static final Log LOG = Log.get(ModbusUtil.class);
+
+    public static synchronized SerialConnection getConnection(ModbusConfig modbusConfig) {
+        String port = modbusConfig.getPort();
+        Integer stopBits = modbusConfig.getStopbits();
+        Integer databits = modbusConfig.getDatabits();
+        Integer baudrate = modbusConfig.getBaudrate();
+        String parity = modbusConfig.getParity();
+
+        SerialParameters parameters = new SerialParameters();
+        parameters.setPortName(port);
+        parameters.setBaudRate(baudrate);
+        parameters.setDatabits(databits);
+        Field field = ReflectUtil.getField(SerialPort.class, parity);
+        parameters.setParity((Integer) ReflectUtil.getStaticFieldValue(field));
+        parameters.setStopbits(stopBits);
+
+        SerialConnection connection;
+
+        String key = parameters.getPortName();
+        if (STRING_SERIAL_CONNECTION_MAP.containsKey(key)) {
+            connection = STRING_SERIAL_CONNECTION_MAP.get(key);
+        } else {
+            connection = new SerialConnection(parameters);
+            STRING_SERIAL_CONNECTION_MAP.put(key, connection);
+        }
+
+        if (!connection.isOpen()) {
+            try {
+                connection.open();
+            } catch (IOException e) {
+                LOG.error(e, e.getMessage());
+            }
+        }
+        return connection;
+    }
+
 
     /**
      * 类型转换
@@ -32,7 +79,7 @@ public class ModbusUtil {
 
         Map<List<ModbusDataType>, Supplier<Object>> map =
                 Map.of(
-                        List.of(ModbusDataType.INT16, ModbusDataType.INT32), () -> HexUtil.encodeHexStr(sub),
+                        List.of(ModbusDataType.INT16, ModbusDataType.INT32), () -> HexUtil.hexToInt(HexUtil.encodeHexStr(sub)),
                         List.of(ModbusDataType.STRING), () -> HexUtil.encodeHexStr(sub)
                 );
 
