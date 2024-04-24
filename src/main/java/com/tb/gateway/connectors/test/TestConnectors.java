@@ -4,12 +4,12 @@ import cn.hutool.core.thread.ThreadUtil;
 import cn.hutool.log.Log;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.tb.gateway.connectors.base.Connector;
+import com.tb.gateway.connectors.base.BaseConnector;
 
 import java.util.Date;
 import java.util.Map;
 
-public class TestConnectors extends Connector<TestConfig> {
+public class TestConnectors extends BaseConnector<TestConfig> {
     private final Log log = Log.get(TestConnectors.class);
 
     @Override

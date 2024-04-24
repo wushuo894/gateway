@@ -10,7 +10,7 @@ import com.ghgande.j2mod.modbus.procimg.ObservableRegister;
 import com.ghgande.j2mod.modbus.procimg.Register;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.tb.gateway.connectors.base.Connector;
+import com.tb.gateway.connectors.base.BaseConnector;
 import com.tb.gateway.enums.ModbusDataType;
 
 import java.io.IOException;
@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-public class ModbusConnectors extends Connector<ModbusConfig> {
+public class ModbusConnectors extends BaseConnector<ModbusConfig> {
     private final Log log = Log.get(ModbusConfig.class);
 
     /**

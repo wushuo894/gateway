@@ -33,5 +33,5 @@ public class BaseConfig implements Serializable {
      * 设备连接
      */
     @Setter
-    private Connector<? extends BaseConfig> connector;
+    private BaseConnector<? extends BaseConfig> baseConnector;
 }

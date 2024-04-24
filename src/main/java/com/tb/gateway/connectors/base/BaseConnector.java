@@ -15,7 +15,7 @@ import java.util.Map;
  */
 @Data
 @Accessors(chain = true)
-public abstract class Connector<T extends BaseConfig> implements Runnable {
+public abstract class BaseConnector<T extends BaseConfig> implements Runnable {
 
     /**
      * 配置文件

@@ -13,7 +13,7 @@ import com.tb.gateway.config.Config;
 import com.tb.gateway.config.GatewayConfig;
 import com.tb.gateway.config.ThreadConfig;
 import com.tb.gateway.connectors.base.BaseConfig;
-import com.tb.gateway.connectors.base.Connector;
+import com.tb.gateway.connectors.base.BaseConnector;
 import com.tb.gateway.enums.DeviceType;
 
 import java.io.File;
@@ -56,7 +56,7 @@ public class GatewayUtil {
         thread.init();
         gatewayConfig.setThread(thread);
 
-        BiMap<BaseConfig, Connector<? extends BaseConfig>> connectorsMap = Config.CONNECTORS_MAP;
+        BiMap<BaseConfig, BaseConnector<? extends BaseConfig>> connectorsMap = Config.CONNECTORS_MAP;
 
         baseConfigList = baseConfigList.stream()
                 .filter(Objects::nonNull)
@@ -71,16 +71,16 @@ public class GatewayUtil {
 
                     String s = FileUtil.readUtf8String(new File("config" + File.separator + config.getFileName()));
 
-                    Connector<? extends BaseConfig> connector = (Connector<? extends BaseConfig>) ReflectUtil.newInstance(connectorsClass);
+                    BaseConnector<? extends BaseConfig> baseConnector = (BaseConnector<? extends BaseConfig>) ReflectUtil.newInstance(connectorsClass);
 
                     Class<?> returnClass =
                             ClassUtil.loadClass(TypeUtil.getGenerics(connectorsClass)[0].getActualTypeArguments()[0].getTypeName());
 
                     BaseConfig baseConfig = (BaseConfig) gson.fromJson(s, returnClass);
                     baseConfig.setDeviceName(config.getDeviceName());
-                    connector.setConfig(baseConfig);
+                    baseConnector.setConfig(baseConfig);
 
-                    connectorsMap.put(baseConfig, connector);
+                    connectorsMap.put(baseConfig, baseConnector);
                     return baseConfig;
                 }).collect(Collectors.toList());
 

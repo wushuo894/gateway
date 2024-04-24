@@ -9,7 +9,7 @@ import cn.hutool.log.level.Level;
 import com.tb.gateway.config.Config;
 import com.tb.gateway.config.ThreadConfig;
 import com.tb.gateway.connectors.base.BaseConfig;
-import com.tb.gateway.connectors.base.Connector;
+import com.tb.gateway.connectors.base.BaseConnector;
 import com.tb.gateway.tb.TbClient;
 import com.tb.gateway.utils.GatewayUtil;
 
@@ -29,13 +29,13 @@ public class Main {
         GatewayUtil.load();
         TbClient.connect();
         TbClient.subscribe();
-        Collection<Connector<? extends BaseConfig>> connectors = Config.CONNECTORS_MAP.values();
+        Collection<BaseConnector<? extends BaseConfig>> baseConnectors = Config.CONNECTORS_MAP.values();
         ExecutorService executor = ThreadConfig
                 .EXECUTOR;
-        for (Connector<? extends BaseConfig> connector : connectors) {
+        for (BaseConnector<? extends BaseConfig> baseConnector : baseConnectors) {
             executor.submit(() -> {
                 try {
-                    connector.run();
+                    baseConnector.run();
                 } catch (Exception e) {
                     log.error(e, e.getMessage());
                 }

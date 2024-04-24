@@ -13,7 +13,7 @@ import com.tb.gateway.config.GatewayConfig;
 import com.tb.gateway.config.ThingsBoardConfig;
 import com.tb.gateway.config.ThreadConfig;
 import com.tb.gateway.connectors.base.BaseConfig;
-import com.tb.gateway.connectors.base.Connector;
+import com.tb.gateway.connectors.base.BaseConnector;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import org.eclipse.paho.client.mqttv3.*;
@@ -77,14 +77,14 @@ public class TbClient {
                 log.info("rpc: {}", jsonObject);
                 String device = jsonObject.get("device").getAsString();
                 GatewayConfig gatewayConfig = Config.GATEWAY_CONFIG;
-                BiMap<BaseConfig, Connector<? extends BaseConfig>> connectorsMap = Config.CONNECTORS_MAP;
+                BiMap<BaseConfig, BaseConnector<? extends BaseConfig>> connectorsMap = Config.CONNECTORS_MAP;
                 for (BaseConfig baseConfig : gatewayConfig.getConnectors()) {
                     String deviceName = baseConfig.getDeviceName();
                     if (!device.equals(deviceName)) {
                         continue;
                     }
-                    Connector<? extends BaseConfig> connector = connectorsMap.get(baseConfig);
-                    Object o = connector.serverSideRpcHandler(jsonObject);
+                    BaseConnector<? extends BaseConfig> baseConnector = connectorsMap.get(baseConfig);
+                    Object o = baseConnector.serverSideRpcHandler(jsonObject);
 
                     if (Objects.isNull(o)) {
                         continue;
