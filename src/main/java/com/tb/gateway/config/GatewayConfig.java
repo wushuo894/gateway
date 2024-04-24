@@ -14,6 +14,9 @@ import java.util.List;
 @Data
 @Accessors(chain = true)
 public class GatewayConfig implements Serializable {
+    private String username;
+    private String password;
+    private Integer port;
     private ThingsBoardConfig thingsboard;
     private List<BaseConfig> connectors;
     private ThreadConfig thread;

@@ -2,6 +2,7 @@ package com.tb.gateway.utils;
 
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.map.BiMap;
+import cn.hutool.core.thread.ThreadUtil;
 import cn.hutool.core.util.ClassUtil;
 import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.ReflectUtil;
@@ -15,16 +16,17 @@ import com.tb.gateway.config.ThreadConfig;
 import com.tb.gateway.connectors.base.BaseConfig;
 import com.tb.gateway.connectors.base.BaseConnector;
 import com.tb.gateway.enums.DeviceType;
+import com.tb.gateway.tb.TbClient;
 
 import java.io.File;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public class GatewayUtil {
     private static final Log log = Log.get(GatewayUtil.class);
+    public static final Gson gson = new Gson();
 
     public static void load() {
         Gson gson = new Gson();
@@ -86,4 +88,30 @@ public class GatewayUtil {
 
         Config.GATEWAY_CONFIG = gatewayConfig.setConnectors(baseConfigList);
     }
+
+    public static void start() {
+        GatewayUtil.load();
+        TbClient.connect();
+        TbClient.subscribe();
+        log.info(gson.toJson(Config.GATEWAY_CONFIG));
+        Collection<BaseConnector<? extends BaseConfig>> connectors = Config.CONNECTORS_MAP.values();
+        ExecutorService executor = ThreadConfig
+                .EXECUTOR;
+        for (BaseConnector<? extends BaseConfig> connector : connectors) {
+            executor.submit(() -> {
+                try {
+                    connector.run();
+                } catch (Exception e) {
+                    log.error(e, e.getMessage());
+                }
+            });
+        }
+
+        // 三分钟一次 GC
+        ThreadUtil.execute(() -> {
+            ThreadUtil.sleep(3, TimeUnit.MINUTES);
+            System.gc();
+        });
+    }
+
 }
