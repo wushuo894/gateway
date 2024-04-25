@@ -16,7 +16,7 @@ import java.lang.reflect.Proxy;
 import java.util.*;
 
 public class RouterAction {
-    private static final Log LOG = Log.get(RouterAction.class);
+
     private static final Map<String, Method> actionList = new HashMap<>();
     private static final Gson gson = new Gson();
 
@@ -60,6 +60,7 @@ public class RouterAction {
     }
 
     public static boolean doAction(HttpServerRequest request, HttpServerResponse response) {
+        Log log = Log.get(RouterAction.class);
         if (CollUtil.isEmpty(actionList)) {
             RouterAction.loadAction();
         }
@@ -70,7 +71,7 @@ public class RouterAction {
             return false;
         }
 
-        LOG.info(path);
+        log.info(path);
 
         Method action = actionList.get(path);
 
@@ -95,7 +96,7 @@ public class RouterAction {
 
         Class<?> declaringClass = action.getDeclaringClass();
         Object o = ReflectUtil.newInstance(declaringClass);
-        LOG.info(declaringClass.getName());
+        log.info(declaringClass.getName());
 
         Object[] objects = Arrays.stream(action.getParameters())
                 .map(parameter -> {
@@ -125,7 +126,7 @@ public class RouterAction {
             invoke = ReflectUtil.invoke(o, action, objects);
         } catch (Exception e) {
             e.printStackTrace();
-            LOG.error(e);
+            log.error(e);
             response.write(e.getMessage()).close();
             return true;
         }
@@ -145,7 +146,7 @@ public class RouterAction {
         }
         boolean value = auth.value();
         if (value) {
-            String login = LoginAction.cache.get("login");
+            String login = LoginAction.CACHE.get("login");
             if (StrUtil.isBlank(login)) {
                 return false;
             }

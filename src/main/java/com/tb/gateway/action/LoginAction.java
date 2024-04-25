@@ -15,7 +15,7 @@ import com.tb.gateway.entity.Result;
 
 @ActionApi("/")
 public class LoginAction {
-    public static final TimedCache<String, String> cache = CacheUtil.newTimedCache(1000 * 60 * 5);
+    public static final TimedCache<String, String> CACHE = CacheUtil.newTimedCache(1000 * 60 * 5);
 
     @PostApi("/login")
     @Auth(false)
@@ -31,7 +31,7 @@ public class LoginAction {
 
         if (StrUtil.equals(configPassword, password) && StrUtil.equals(configUsername, username)) {
             String s = RandomUtil.randomString(64);
-            cache.put("login", s);
+            CACHE.put("login", s);
             return Result.success(s);
         }
 

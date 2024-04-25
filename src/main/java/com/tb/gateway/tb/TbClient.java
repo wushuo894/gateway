@@ -28,9 +28,9 @@ import java.util.function.Function;
 public class TbClient {
     private static MqttClient mqttClient;
     private static final Gson gson = new Gson();
-    private static final Log log = Log.get(TbClient.class);
 
     public static void connect() {
+        Log log = Log.get(TbClient.class);
         ThingsBoardConfig thingsBoardConfig = Config.THINGS_BOARD_CONFIG;
         String host = thingsBoardConfig.getHost();
         Integer port = thingsBoardConfig.getPort();
@@ -62,6 +62,7 @@ public class TbClient {
     }
 
     public static void publish(String topic, String msg) {
+        Log log = Log.get(TbClient.class);
         MqttMessage mqttMessage = new MqttMessage();
         mqttMessage.setPayload(msg.getBytes(StandardCharsets.UTF_8));
         try {
@@ -74,6 +75,7 @@ public class TbClient {
 
     private static final Map<String, Function<JsonObject, String>> functionMap =
             Map.of("v1/gateway/rpc", jsonObject -> {
+                Log log = Log.get(TbClient.class);
                 log.info("rpc: {}", jsonObject);
                 String device = jsonObject.get("device").getAsString();
                 GatewayConfig gatewayConfig = Config.GATEWAY_CONFIG;
@@ -107,6 +109,7 @@ public class TbClient {
      * 订阅
      */
     public static void subscribe() {
+        Log log = Log.get(TbClient.class);
         try {
             String[] topicFilters = ArrayUtil.toArray(functionMap.keySet(), String.class);
             mqttClient.subscribe(topicFilters);
@@ -120,7 +123,7 @@ public class TbClient {
             }
 
             @Override
-            public void messageArrived(String topic, MqttMessage message) throws Exception {
+            public void messageArrived(String topic, MqttMessage message) {
                 if (!functionMap.containsKey(topic)) {
                     log.debug("not subscribe: {}", topic);
                     return;

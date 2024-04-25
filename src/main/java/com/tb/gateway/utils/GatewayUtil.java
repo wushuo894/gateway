@@ -25,10 +25,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public class GatewayUtil {
-    private static final Log log = Log.get(GatewayUtil.class);
     public static final Gson gson = new Gson();
 
     public static void load() {
+        Log log = Log.get(GatewayUtil.class);
         Gson gson = new Gson();
 
         File configDir = new File("config");
@@ -90,6 +90,7 @@ public class GatewayUtil {
     }
 
     public static void start() {
+        Log log = Log.get(GatewayUtil.class);
         GatewayUtil.load();
         TbClient.connect();
         TbClient.subscribe();
