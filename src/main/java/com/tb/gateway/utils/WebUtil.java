@@ -9,9 +9,13 @@ import com.tb.gateway.config.GatewayConfig;
 public class WebUtil {
     public static void start() {
         GatewayConfig gatewayConfig = Config.GATEWAY_CONFIG;
+        Boolean web = gatewayConfig.getWeb();
+        if (!web) {
+            return;
+        }
         Integer port = gatewayConfig.getPort();
 
-        ThreadUtil.execute(()->{
+        ThreadUtil.execute(() -> {
             SimpleServer server = new SimpleServer(port);
             server.addAction("/", new RootAction())
                     .start();
