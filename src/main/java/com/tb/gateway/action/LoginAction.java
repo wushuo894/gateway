@@ -22,6 +22,7 @@ public class LoginAction {
     public Result<String> login(@Body GatewayConfig config) {
         String username = config.getUsername();
         String password = config.getPassword();
+        password = MD5.create().digestHex(password);
 
         GatewayConfig gatewayConfig = Config.GATEWAY_CONFIG;
         String configUsername = gatewayConfig.getUsername();
@@ -36,4 +37,11 @@ public class LoginAction {
 
         return Result.error();
     }
+
+    @PostApi("/test")
+    @Auth(true)
+    public Result<String> test(@Body String s) {
+        return Result.success(s);
+    }
+
 }

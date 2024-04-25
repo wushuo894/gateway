@@ -9,7 +9,6 @@ import com.tb.gateway.utils.WebUtil;
 
 public class Main {
     static {
-        ConsoleLog.setLevel(Level.INFO);
         LogFactory.setCurrentLogFactory(new ConsoleColorLogFactory());
     }
 

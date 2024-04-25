@@ -32,5 +32,5 @@
     "maxPoolSize": 12,
     "capacity": 128
   },
-  "logLevel": "DEBUG"
+  "logLevel": "ALL"
 }

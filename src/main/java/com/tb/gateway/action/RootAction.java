@@ -51,9 +51,18 @@ public class RootAction implements Action {
             log.info(fileName);
             return;
         }
-        if (RouterAction.doAction(request, response)) {
+
+        try {
+            if (RouterAction.doAction(request, response)) {
+                return;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error(e);
+            response.write(e.getMessage()).close();
             return;
         }
+
 
         response.send404("404 Not Found !");
     }
