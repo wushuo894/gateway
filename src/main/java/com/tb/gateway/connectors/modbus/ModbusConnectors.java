@@ -38,7 +38,7 @@ public class ModbusConnectors extends BaseConnector<ModbusConfig> {
                     log.error(e, e.getMessage());
                 }
             }
-            ThreadUtil.sleep(3000);
+            ThreadUtil.sleep(100);
         } while (true);
     }
 

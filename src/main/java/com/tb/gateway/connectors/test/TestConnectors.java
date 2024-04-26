@@ -18,7 +18,7 @@ public class TestConnectors extends BaseConnector<TestConfig> {
             telemetry(Map.of(
                     "test", new Date().getTime()
             ));
-            ThreadUtil.sleep(3000);
+            ThreadUtil.sleep(100);
         }
     }
 

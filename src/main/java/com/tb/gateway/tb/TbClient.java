@@ -2,6 +2,7 @@ package com.tb.gateway.tb;
 
 import cn.hutool.core.map.BiMap;
 import cn.hutool.core.text.StrFormatter;
+import cn.hutool.core.thread.ThreadUtil;
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.RuntimeUtil;
@@ -20,8 +21,11 @@ import lombok.experimental.Accessors;
 import org.eclipse.paho.client.mqttv3.*;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
 @Data
@@ -29,6 +33,7 @@ import java.util.function.Function;
 public class TbClient {
     private static MqttClient mqttClient;
     private static final Gson gson = new Gson();
+    private static final Map<String, Object> TELEMETRY_MAP = new ConcurrentHashMap<>();
 
     public static void connect() {
         Log log = Log.get(TbClient.class);
@@ -59,6 +64,21 @@ public class TbClient {
             log.info("connect ok.");
 
             RuntimeUtil.addShutdownHook(TbClient::disconnect);
+
+            ThreadUtil.execute(() -> {
+                while (true) {
+                    ThreadUtil.sleep(3000);
+                    if (TELEMETRY_MAP.isEmpty()) {
+                        continue;
+                    }
+                    synchronized (TELEMETRY_MAP) {
+                        String s = gson.toJson(TELEMETRY_MAP);
+                        publish("v1/gateway/telemetry", s);
+                        TELEMETRY_MAP.clear();
+                    }
+                }
+            });
+
         } catch (MqttException e) {
             log.error(e, e.getMessage());
             System.exit(1);
@@ -72,6 +92,13 @@ public class TbClient {
         } catch (MqttException e) {
             log.error(e, e.getMessage());
         }
+    }
+
+    public static void telemetry(String deviceName, Map<String, Object> values) {
+        TELEMETRY_MAP.put(deviceName, List.of(Map.of(
+                "ts", new Date().getTime(),
+                "values", values
+        )));
     }
 
     public static void publish(String topic, String msg) {

@@ -1,13 +1,10 @@
 package com.tb.gateway.connectors.base;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.tb.gateway.tb.TbClient;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
-import java.util.Date;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -38,11 +35,7 @@ public abstract class BaseConnector<T extends BaseConfig> implements Runnable {
 
     public void telemetry(Map<String, Object> map) {
         String deviceName = config.getDeviceName();
-        Map<String, List<Object>> msg = Map.of(deviceName, List.of(Map.of(
-                "ts", new Date().getTime(),
-                "values", map
-        )));
-        TbClient.publish("v1/gateway/telemetry", new Gson().toJson(msg));
+        TbClient.telemetry(deviceName, map);
     }
 
     public void setConfig(BaseConfig baseConfig) {
