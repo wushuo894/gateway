@@ -9,6 +9,7 @@ import cn.hutool.http.server.HttpServerResponse;
 import cn.hutool.log.Log;
 import com.google.gson.Gson;
 import com.tb.gateway.annotation.*;
+import com.tb.gateway.controller.LoginController;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -20,8 +21,8 @@ public class RouterAction {
     private static final Map<String, Method> actionList = new HashMap<>();
     private static final Gson gson = new Gson();
 
-    public static String getUrl(ActionApi actionApi, Annotation... annotations) {
-        String baseUrl = actionApi.value();
+    public static String getUrl(Controller controller, Annotation... annotations) {
+        String baseUrl = controller.value();
 
         for (Annotation annotation : annotations) {
             if (Objects.isNull(annotation)) {
@@ -38,11 +39,11 @@ public class RouterAction {
         if (CollUtil.isNotEmpty(actionList)) {
             return;
         }
-        Set<Class<?>> classes = ClassUtil.scanPackage("com.tb.gateway.action");
+        Set<Class<?>> classes = ClassUtil.scanPackage("com.tb.gateway.controller");
 
         for (Class<?> aClass : classes) {
-            ActionApi actionApi = aClass.getAnnotation(ActionApi.class);
-            if (Objects.isNull(actionApi)) {
+            Controller controller = aClass.getAnnotation(Controller.class);
+            if (Objects.isNull(controller)) {
                 continue;
             }
 
@@ -50,7 +51,7 @@ public class RouterAction {
             for (Method method : methods) {
                 PostApi postApi = method.getAnnotation(PostApi.class);
                 GetApi getApi = method.getAnnotation(GetApi.class);
-                String url = getUrl(actionApi, postApi, getApi);
+                String url = getUrl(controller, postApi, getApi);
                 if (StrUtil.isBlank(url)) {
                     continue;
                 }
@@ -146,7 +147,7 @@ public class RouterAction {
         }
         boolean value = auth.value();
         if (value) {
-            String login = LoginAction.CACHE.get("login");
+            String login = LoginController.CACHE.get("login");
             if (StrUtil.isBlank(login)) {
                 return false;
             }

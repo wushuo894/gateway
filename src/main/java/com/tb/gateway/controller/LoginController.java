@@ -1,11 +1,11 @@
-package com.tb.gateway.action;
+package com.tb.gateway.controller;
 
 import cn.hutool.cache.CacheUtil;
 import cn.hutool.cache.impl.TimedCache;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.crypto.digest.MD5;
-import com.tb.gateway.annotation.ActionApi;
+import com.tb.gateway.annotation.Controller;
 import com.tb.gateway.annotation.Auth;
 import com.tb.gateway.annotation.Body;
 import com.tb.gateway.annotation.PostApi;
@@ -13,8 +13,8 @@ import com.tb.gateway.config.Config;
 import com.tb.gateway.config.GatewayConfig;
 import com.tb.gateway.entity.Result;
 
-@ActionApi("/")
-public class LoginAction {
+@Controller("/")
+public class LoginController {
     public static final TimedCache<String, String> CACHE = CacheUtil.newTimedCache(1000 * 60 * 5);
 
     @PostApi("/login")
