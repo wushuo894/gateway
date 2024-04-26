@@ -119,8 +119,10 @@ public class GatewayUtil {
 
         // 三分钟一次 GC
         ThreadUtil.execute(() -> {
-            ThreadUtil.sleep(3, TimeUnit.MINUTES);
-            System.gc();
+           while (true){
+               ThreadUtil.sleep(3, TimeUnit.MINUTES);
+               System.gc();
+           }
         });
     }
 
