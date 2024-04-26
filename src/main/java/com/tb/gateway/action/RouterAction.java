@@ -16,6 +16,9 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.*;
 
+/**
+ * 处理路由
+ */
 public class RouterAction {
 
     private static final Map<String, Method> actionList = new HashMap<>();

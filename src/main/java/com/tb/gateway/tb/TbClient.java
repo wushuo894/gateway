@@ -28,6 +28,9 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
+/**
+ * TB
+ */
 @Data
 @Accessors(chain = true)
 public class TbClient {
@@ -35,6 +38,9 @@ public class TbClient {
     private static final Gson gson = new Gson();
     private static final Map<String, Object> TELEMETRY_MAP = new ConcurrentHashMap<>();
 
+    /**
+     * 连接MQTT
+     */
     public static void connect() {
         Log log = Log.get(TbClient.class);
         ThingsBoardConfig thingsBoardConfig = Config.THINGS_BOARD_CONFIG;
@@ -65,6 +71,7 @@ public class TbClient {
 
             RuntimeUtil.addShutdownHook(TbClient::disconnect);
 
+            // 将遥测数据发送出去
             ThreadUtil.execute(() -> {
                 while (true) {
                     ThreadUtil.sleep(3000);
@@ -94,6 +101,12 @@ public class TbClient {
         }
     }
 
+    /**
+     * 将遥测数据放入队列
+     *
+     * @param deviceName
+     * @param values
+     */
     public static void telemetry(String deviceName, Map<String, Object> values) {
         TELEMETRY_MAP.put(deviceName, List.of(Map.of(
                 "ts", new Date().getTime(),
@@ -101,6 +114,12 @@ public class TbClient {
         )));
     }
 
+    /**
+     * 发送消息
+     *
+     * @param topic
+     * @param msg
+     */
     public static void publish(String topic, String msg) {
         Log log = Log.get(TbClient.class);
         MqttMessage mqttMessage = new MqttMessage();
@@ -113,6 +132,9 @@ public class TbClient {
         }
     }
 
+    /**
+     * 处理订阅
+     */
     private static final Map<String, Function<JsonObject, String>> functionMap =
             Map.of("v1/gateway/rpc", jsonObject -> {
                 Log log = Log.get(TbClient.class);

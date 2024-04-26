@@ -6,7 +6,13 @@ import com.tb.gateway.action.RootAction;
 import com.tb.gateway.config.Config;
 import com.tb.gateway.config.GatewayConfig;
 
+/**
+ * web
+ */
 public class WebUtil {
+    /**
+     * 启动
+     */
     public static void start() {
         GatewayConfig gatewayConfig = Config.GATEWAY_CONFIG;
         Boolean web = gatewayConfig.getWeb();

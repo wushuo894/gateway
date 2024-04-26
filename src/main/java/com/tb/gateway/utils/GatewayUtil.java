@@ -24,9 +24,15 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+/**
+ * 网关工具
+ */
 public class GatewayUtil {
     public static final Gson gson = new Gson();
 
+    /**
+     * 加载
+     */
     public static void load() {
         Log log = Log.get(GatewayUtil.class);
         Gson gson = new Gson();
@@ -89,6 +95,9 @@ public class GatewayUtil {
         Config.GATEWAY_CONFIG = gatewayConfig.setConnectors(baseConfigList);
     }
 
+    /**
+     * 启动
+     */
     public static void start() {
         Log log = Log.get(GatewayUtil.class);
         GatewayUtil.load();

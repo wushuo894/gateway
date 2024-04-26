@@ -1,7 +1,6 @@
 package com.tb.gateway.entity;
 
 import cn.hutool.http.HttpStatus;
-import com.google.gson.annotations.JsonAdapter;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -9,6 +8,11 @@ import lombok.experimental.Accessors;
 
 import java.io.Serializable;
 
+/**
+ * 返回包装体
+ *
+ * @param <T>
+ */
 @Data
 @Accessors(chain = true)
 @AllArgsConstructor
