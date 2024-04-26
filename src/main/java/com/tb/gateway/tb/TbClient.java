@@ -4,6 +4,7 @@ import cn.hutool.core.map.BiMap;
 import cn.hutool.core.text.StrFormatter;
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.ObjUtil;
+import cn.hutool.core.util.RuntimeUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.log.Log;
 import com.google.gson.Gson;
@@ -48,6 +49,7 @@ public class TbClient {
             MqttConnectOptions mqttConnectOptions = new MqttConnectOptions();
             mqttConnectOptions.setUserName(userName);
             mqttConnectOptions.setConnectionTimeout(timeout);
+            mqttConnectOptions.setMaxReconnectDelay(Integer.MAX_VALUE);
 
             if (StrUtil.isNotBlank(password)) {
                 mqttConnectOptions.setPassword(password.toCharArray());
@@ -55,9 +57,20 @@ public class TbClient {
 
             mqttClient.connect(mqttConnectOptions);
             log.info("connect ok.");
+
+            RuntimeUtil.addShutdownHook(TbClient::disconnect);
         } catch (MqttException e) {
             log.error(e, e.getMessage());
             System.exit(1);
+        }
+    }
+
+    public static void disconnect() {
+        Log log = Log.get(TbClient.class);
+        try {
+            mqttClient.disconnect();
+        } catch (MqttException e) {
+            log.error(e, e.getMessage());
         }
     }
 
